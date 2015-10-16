@@ -1,0 +1,160 @@
+\documentclass[a4j]{jarticle}
+\title{進化的アルゴリズムレポート \ 課題1}
+\author{情報科学類, 3年, 2クラス, 学籍番号：201311403 \ 山岡 洸瑛, Yamaoka
+Kouei}
+\date{\today}
+
+%余白設定
+\setlength{\topmargin}{20mm}
+\addtolength{\topmargin}{-1in}
+\setlength{\oddsidemargin}{20mm}
+\addtolength{\oddsidemargin}{-1in}
+\setlength{\evensidemargin}{15mm}
+\addtolength{\evensidemargin}{-1in}
+\setlength{\textwidth}{170mm}
+\setlength{\textheight}{254mm}
+\setlength{\headsep}{0mm}
+\setlength{\headheight}{0mm}
+\setlength{\topskip}{0mm}
+
+
+\def\pgfsysdriver{pgfsys-dvipdfmx.def}
+
+\usepackage{ascmac}
+\usepackage{here}
+\usepackage{tikz}
+\usetikzlibrary{trees}
+\thispagestyle{empty}
+\usepackage{bm}
+
+\usepackage{listings,jlisting}
+\renewcommand{\lstlistingname}{リスト}
+\lstset{
+basicstyle=\ttfamily\scriptsize,
+commentstyle=\textit,
+classoffset=1,
+keywordstyle=\bfseries,
+frame=tRBl,
+framesep=5pt,
+showstringspaces=false,
+numbers=left,
+stepnumber=1,
+numberstyle=\tiny,
+tabsize=2
+}
+
+
+\begin{document}
+\maketitle
+
+\section*{グラフ色塗り問題の作成}
+グラフ色塗り問題の作成のため，隣接行列を作成するプログラムを作成する．
+0で初期化された$n*n$の2次元配列を作成し，その上三角要素にランダムに1を
+代入することで隣接行列を作成する．\\\ \ \ 
+ランダムに1を代入するため，上三角要素の数と同じ長さの配列を用意する．こ
+こで上三角要素の数を$X$個とする．$0〜X$を範囲として乱数を生成，それをint
+型にキャストすることで$0〜(X-1)$の範囲の整数が得られる．その整数番目の配
+列の要素を1とすることを繰り返し規定の数1にする．ここで得た配列を順に上三
+角要素にコピーすることで隣接行列を作成する．リスト\ref{prog}にプログラムの1部を示
+す．ソース内のN[k]にはノードの数が格納されており，forループを使うことで1
+度実行すれば良いようにしてある．また，作成した隣接行列はノード数が$30, 60, 90, 120, 150$の5つの密結合問題と疎
+結合問題の計10個だが，大きすぎてレポートには示せないため，ここではノード
+数を9として作成し表\ref{sparse}, 表\ref{dense}に示す．
+
+\begin{lstlisting}[caption=makeAdjecencyMatrix.c, label=prog, xleftmargin=1cm]
+int main(void){
+    //seed 509
+    srand(509);
+
+    const int N[5] = {30, 60, 90, 120, 150};   // number if nodes
+    int i, j, k; // for for loop
+    int red, green;  // color range
+    // ex)r:9, g:19, b:29(not use) @ N[k]=30 
+    red = N[k] / 3 - 1;
+    green = N[k] / 3 * 2 - 1;
+
+    int SMat[N[k]][N[k]]; // AdjacencyMatrix for sparse
+    int SLink = 3 * N[k]; // number of links for sparse
+
+    // init
+    for(i=0; i<N[k]; i++){
+      for(j=0; j<N[k]; j++){
+        SMat[i][j] = 0;
+      }
+    }
+
+    // make links
+    // calc number of diferent color elements
+    int diffColorNum = pow(N[k], 2) / 3;
+
+    // make array for upper tri elem and init
+    int SUpperTri[diffColorNum]; // for sparse
+    for(i=0; i<diffColorNum; i++){
+      SUpperTri[i] = 0;
+    }
+
+    // choice random index for sparse
+    int count = 0;
+    int r;
+    while(TRUE){
+      r = diffColorNum * (rand()/(RAND_MAX+1.0));
+      if(SUpperTri[r] != 1){
+        SUpperTri[r] = 1;
+        count++;
+      }
+      if(count == SLink){
+        break;
+      }
+    }
+
+    // input SUpperTri to Adjacency Matrix
+    count = 0;
+    for(i=0; i<N[k]; i++){
+      for(j=0; j<N[k]; j++){
+        if(i <= red && j > red || i > red && i <= green && j > green){
+          SMat[i][j] = SUpperTri[count];
+          count++;
+        }
+      }
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\begin{table}[htb]
+ \begin{center}
+  \begin{tabular}[tb]{|c|c|c|c|c|c|c|c|c|} \hline
+0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 \\ \hline
+0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 \\ \hline
+0 & 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 \\ \hline
+0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 \\ \hline
+0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 \\ \hline
+0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 \\ \hline
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+  \end{tabular}
+  \caption{疎結合問題用隣接行列}
+ \label{sparse}
+ \end{center}
+\end{table}
+
+\begin{table}[htb]
+ \begin{center}
+  \begin{tabular}[tb]{|c|c|c|c|c|c|c|c|c|} \hline
+0 & 0 & 0 & 1 & 1 & 1 & 1 & 0 & 0 \\ \hline
+0 & 0 & 0 & 1 & 0 & 0 & 1 & 1 & 1 \\ \hline
+0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 0 \\ \hline
+0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 \\ \hline
+0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & 1 \\ \hline
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 \\ \hline
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+  \end{tabular}
+ \end{center}
+  \caption{密結合問題用隣接行列}
+ \label{dense}
+\end{table}
+
+\end{document}

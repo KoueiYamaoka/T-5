@@ -9,18 +9,20 @@ int main(void){
   //seed 509
   srand(509);
 
-  const int N[5] = {30, 60, 90, 120, 150};   // number if nodes
+  // number if nodes
+  const int N[5] = {9, 60, 90, 120, 150};
   int i, j, k; // for for loop
   int red, green;  // color range
 
-  for(k=0; k<5; k++){
+  for(k=0; k<1; k++){
     int SMat[N[k]][N[k]]; // AdjacencyMatrix for sparse
     int DMat[N[k]][N[k]]; // AdjacencyMatrix for dense
     int SLink = 3 * N[k]; // number of links for sparse
     int DLink = N[k] * (N[k] - 1) / 4;  // number of links for dense
-    // ex)r:9, g:19, b:29(not use) @ N[k]=30 
+    // ex)r:9, g:19, b:29 @ N[k]=30 
     red = N[k] / 3 - 1;
     green = N[k] / 3 * 2 - 1;
+    //blue = N[k] - 1;  not use
     
     // init
     for(i=0; i<N[k]; i++){
@@ -32,12 +34,12 @@ int main(void){
 
     // make links
     // calc number of diferent color elements
-    int diffColorNum = pow(N[k], 2) / 3;
+    int diffColerNum = pow(N[k], 2) / 3;
 
     // make array for upper tri elem and init
-    int SUpperTri[diffColorNum]; // for sparse
-    int DUpperTri[diffColorNum]; // for dense
-    for(i=0; i<diffColorNum; i++){
+    int SUpperTri[diffColerNum]; // for sparse
+    int DUpperTri[diffColerNum]; // for dense
+    for(i=0; i<diffColerNum; i++){
       SUpperTri[i] = 0;
       DUpperTri[i] = 0;
     }
@@ -46,7 +48,7 @@ int main(void){
     int count = 0;
     int r;
     while(TRUE){
-      r = diffColorNum * (rand()/(RAND_MAX+1.0));
+      r = diffColerNum * (rand()/(RAND_MAX+1.0));
       if(SUpperTri[r] != 1){
 	SUpperTri[r] = 1;
 	count++;
@@ -58,7 +60,7 @@ int main(void){
     // choice random index for dense
     count = 0;
     while(TRUE){
-      r =diffColorNum * (rand()/(RAND_MAX+1.0));
+      r =diffColerNum * (rand()/(RAND_MAX+1.0));
       if(DUpperTri[r] != 1){
 	DUpperTri[r] = 1;
 	count++;
@@ -102,7 +104,7 @@ int main(void){
     // write
     for(i=0; i<N[k]; i++){
       for(j=0; j<N[k]; j++){
-	fprintf(fp, "%d ", SMat[i][j]);
+	fprintf(fp, "%d & ", SMat[i][j]);
       }
       fprintf(fp, "\n");
     }
@@ -119,7 +121,7 @@ int main(void){
     // write
     for(i=0; i<N[k]; i++){
       for(j=0; j<N[k]; j++){
-	fprintf(fp, "%d ", DMat[i][j]);
+	fprintf(fp, "%d & ", DMat[i][j]);
       }
       fprintf(fp, "\n");
     }
