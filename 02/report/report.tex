@@ -1,0 +1,431 @@
+\documentclass[a4j]{jarticle}
+\title{進化的アルゴリズムレポート \ 課題2}
+\author{情報科学類, 3年, 2クラス, 学籍番号：201311403 \ 山岡 洸瑛, Yamaoka
+Kouei}
+\西暦
+\date{\today}
+
+%余白設定
+\setlength{\topmargin}{20mm}
+\addtolength{\topmargin}{-1in}
+\setlength{\oddsidemargin}{20mm}
+\addtolength{\oddsidemargin}{-1in}
+\setlength{\evensidemargin}{15mm}
+\addtolength{\evensidemargin}{-1in}
+\setlength{\textwidth}{170mm}
+\setlength{\textheight}{254mm}
+\setlength{\headsep}{0mm}
+\setlength{\headheight}{0mm}
+\setlength{\topskip}{0mm}
+
+
+\def\pgfsysdriver{pgfsys-dvipdfmx.def}
+
+\usepackage{ascmac}
+\usepackage{here}
+\usepackage{tikz}
+\usetikzlibrary{trees}
+\thispagestyle{empty}
+\usepackage{bm}
+
+\usepackage{listings,jlisting}
+\renewcommand{\lstlistingname}{リスト}
+\lstset{
+basicstyle=\ttfamily\scriptsize,
+commentstyle=\textit,
+classoffset=1,
+keywordstyle=\bfseries,
+frame=tRBl,
+framesep=5pt,
+showstringspaces=false,
+numbers=left,
+stepnumber=1,
+numberstyle=\tiny,
+tabsize=2
+}
+
+\begin{document}
+\maketitle
+
+\section*{山登り法によるグラフ色塗り問題の解決}
+\subsection*{HCアルゴリズム}
+HCアルゴリズムを実装した．アルゴリズムは与えられた資料と同じである．
+プログラムをレポートの最後，リスト\ref{HC.c}に示す．なお，プログラムは1
+部のみ示し，変数宣言の1部や，隣接行列の読み込みなどは省略している．
+
+\subsection*{IHC}
+IHCのアルゴリズムを実装した．IHCは
+山登り法が失敗した場合にもう一度山登り法を実行する，つまりリスト
+\ref{HC.c}を成功するまで，もしくは規定回数繰り返すだけなので，ソースコー
+ドは省略する．
+
+\section*{実験}
+\subsection*{実験条件(各種パラメータ)}
+以下に各種パラメータの値を示す．なお，乱数のシード値は509とした．
+
+\subsubsection*{問題サイズ(ノード数)}
+問題サイズは疎結合，密結合共に30, 60, 90, 120, 150の5つとした．
+
+\subsubsection*{失敗と判断するまでの繰り返し回数}
+失敗と判断するまでの繰り返し回数は表\ref{maxloop}とした．これはそれぞれの問題
+サイズについて，十分大きな回数繰り返すHCアルゴリズムを実行し，失敗と判断
+しても問題ない回数を確認し，決定したものである．失敗と判断しても問題ない
+回数は，成功した場合の繰り返し回数を複数回確認し決定した．確認のために失
+敗時はその旨を，成功時にはその時の繰り返し回数と，リスタートした回数を出
+力させた．成功時の出力をまとめた表を表\ref{loops}, \ref{loopd}に示す．な
+お表\ref{loops}, \ref{loopd}
+において，サイズNの疎結合問題を「疎(N)」，同様にサイズNの密結合問題を「密(N)」と
+表し．繰り返し回数を「回数」，リスタート回数を「RE」としている．
+
+\begin{table}[htb]
+ \begin{center}  
+  \begin{tabular}[tb]{|c|c|c|c|c|c|} \hline
+   問題サイズ& 30& 60& 90& 120& 150 \\ \hline
+   最大繰り返し回数(疎結合)& 200& 400& 800& 1000& 2000 \\ \hline
+   最大繰り返し回数(密結合)& 150& 300& 400& 600& 800 \\ \hline
+  \end{tabular}
+  \caption{失敗と判断するまでの繰り返し回数}
+  \label{maxloop}
+ \end{center}
+\end{table}
+
+\begin{table}[htb]
+ \begin{center}
+  \begin{tabular}[tb]{|c||c|c||c|c||c|c||c|c||c|c|} \hline
+   & \multicolumn{2}{|c||}{疎(30)} & \multicolumn{2}{|c||}{疎(60)} &
+   \multicolumn{2}{|c||}{疎(90)} & \multicolumn{2}{|c||}{疎(120)} &
+   \multicolumn{2}{|c|}{疎(150)}  \\   \cline{2-11}
+   & 回数& RE & 回数& RE & 回数& RE & 回数& RE & 回数& RE  \\ \hline \hline
+   成功1回目& 93& 1& 751& 11& 359& 11& 718& 124& 2980& 19\\ \hline
+   成功2回目& 181& 2& 252& 13& 621& 34& 910& 196& 1827& 24\\ \hline
+   成功3回目& 43& 3& 153& 16& 380& 47& 239& 342& 1528& 88\\ \hline
+   成功4回目& 77& 4& 399& 26& 788& 69& 606& 392& 4636& 174\\ \hline
+   成功5回目& 59& 5& 165& 34& 389& 83& 1092& 668& 1235& 640\\ \hline
+   成功6回目& 383& 6& 717& 39& 675& 95& -& -& -& -\\ \hline
+   成功7回目& 41& 7& 256& 46& 237& 96& -& -& -& -\\ \hline
+   成功8回目& 77& 8& 330& 50& 669& 98& -& -& -& -\\ \hline
+   成功9回目& 52& 9& 397& 54& -& -& -& -& -& -\\ \hline
+   成功10回目& 192& 10& 279& 56& -& -& -& -& -& -\\ \hline
+  \end{tabular}
+  \caption{成功時の出力(疎結合問題)}
+  \label{loops}
+ \end{center}
+\end{table}
+
+\begin{table}[htb]
+ \begin{center}
+  \begin{tabular}[tb]{|c||c|c||c|c||c|c||c|c||c|c|} \hline
+& \multicolumn{2}{|c||}{密(30)} & \multicolumn{2}{|c||}{密(60)} &
+   \multicolumn{2}{|c||}{密(90)} & \multicolumn{2}{|c||}{密(120)} &
+   \multicolumn{2}{|c|}{密(150)}  \\   \cline{2-11}
+   & 回数& RE & 回数& RE & 回数& RE & 回数& RE & 回数& RE  \\ \hline \hline
+   成功1回目& 85& 0& 172& 0& 267& 0& 402& 0& 587& 0\\ \hline
+   成功2回目& 117& 1& 172& 1& 282& 1& 387& 1& 730& 1\\ \hline
+   成功3回目& 79& 2& 174& 2& 276& 2& 448& 2& 656& 2\\ \hline
+   成功4回目& 58& 3& 238& 3& 324& 3& 578& 3& 622& 3\\ \hline
+   成功5回目& 103& 4& 128& 4& 258& 4& 328& 4& 649& 4\\ \hline
+   成功6回目& 114& 5& 225& 5& 267& 5& 414& 5& 610& 5\\ \hline
+   成功7回目& 68& 6& 156& 6& 362& 6& 505& 6& 484& 6\\ \hline
+   成功8回目& 90& 7& 191& 7& 304& 7& 403& 7& 477& 7\\ \hline
+   成功9回目& 106& 8& 168& 8& 216& 8& 404& 8& 648& 8\\ \hline
+   成功10回目& 67& 9& 273& 9& 373& 9& 348& 9& 729& 9\\ \hline
+  \end{tabular}
+  \caption{成功時の出力(密結合問題)}
+  \label{loopd}
+ \end{center}
+\end{table}
+
+\subsubsection*{リスタートさせる回数}
+IHCアルゴリズムでHCアルゴリズムを繰り返す回数について示す．表
+\ref{loops}, \ref{loopd}からわかる通り，
+疎結合問題で問題サイズが2桁の場合，リスタートさせる回数は，100回程度で十
+分である．問題サイズが150程度の大きさになると500回ほど計算したほうが良い
+だろう．密結合の場合は問題サイズが150程度であれば10回も必要ない．実験においてリスタートした回数を表
+\ref{restart}に示す．
+
+\begin{table}[htb]
+ \begin{center}
+  \begin{tabular}[t]{|c|c|c|c|c|c|} \hline
+   問題サイズ& 30& 60& 90& 120& 150 \\ \hline
+   リスタートする回数(疎結合)& 20& 50& 100& 500& 500 \\ \hline
+   リスタートする回数(密結合)& 10& 10& 10& 10& 10\\ \hline
+  \end{tabular}
+  \caption{リスタートする回数}
+  \label{restart}
+ \end{center}
+\end{table}
+
+\subsection*{実験結果}
+以下に上記パラメータで行った実験の結果を示す．表\ref{result}に成功/失敗
+の表を示す．ただし，失敗と判断するまでの繰り返し回数を表\ref{loops},
+\ref{loopd}によって求め，表\ref{maxloop}の値を用いたため，実行結果は表
+\ref{loops}, \ref{loopd}とは異なっている．以下にそれぞれのパターンについ
+て成功したタイミングとそのグラフを示す．
+
+\begin{table}[htb]
+ \begin{center}
+  \begin{tabular}[tb]{|c|c|c|c|c|c|} \hline
+   問題サイズ & 30& 60& 90& 120& 150 \\ \hline
+   成功/失敗(疎結合)& 成功& 成功& 成功& 成功& 成功 \\ \hline
+   成功/失敗(密結合)& 成功& 成功& 成功& 成功& 成功 \\ \hline
+  \end{tabular}
+  \caption{実験結果(成功/失敗)}
+  \label{result}
+ \end{center}
+\end{table}
+
+\subsubsection*{疎結合(問題サイズ30)}
+2回目のHCアルゴリズムの125ステップ目に成功した．最大繰り返し回数は200回
+なので，世代は325である．図は図\ref{30s}に示す．
+\begin{figure}[htb]
+ \begin{center}
+  \includegraphics[width=14cm, clip, bb=-250 0 586 345]{violation30s.jpg}
+  \caption{疎結合問題(30)の探索過程(繰り返し山登り法)}
+  \label{30s}
+ \end{center}
+\end{figure}
+
+\subsubsection*{疎結合(問題サイズ60)}
+5回目のHCアルゴリズムの243ステップ目に成功した．最大繰り返し回数は400回
+なので，世代は1843である．図は図\ref{60s}に示す．
+\begin{figure}[htb]
+ \begin{center}
+  \includegraphics[width=14cm, clip, bb=-250 0 590 348]{violation60s.jpg}
+  \caption{疎結合問題(60)の探索過程(繰り返し山登り法)}
+  \label{60s}
+ \end{center}
+\end{figure}
+
+\newpage
+\subsubsection*{疎結合(問題サイズ90)}
+46回目のHCアルゴリズムの189ステップ目に成功した．最大繰り返し回数は800回
+なので，世代は36189である．図は図\ref{90s}に示す．
+\begin{figure}[htb]
+ \begin{center}
+  \includegraphics[width=14cm, clip, bb=-250 0 581 343]{violation90s.jpg}
+  \caption{疎結合問題(90)の探索過程(繰り返し山登り法)}
+  \label{90s}
+ \end{center}
+\end{figure}
+
+\subsubsection*{疎結合(問題サイズ120)}
+96回目のHCアルゴリズムの455ステップ目に成功した．最大繰り返し回数は1000回
+なので，世代は95445である．図は図\ref{120s}に示す．
+\begin{figure}[htb]
+ \begin{center}
+  \includegraphics[width=14cm, clip, bb=-250 0 581 342]{violation120s.jpg}
+  \caption{疎結合問題(120)の探索過程(繰り返し山登り法)}
+  \label{120s}
+ \end{center}
+\end{figure}
+\newpage
+\subsubsection*{疎結合(問題サイズ150)}
+80回目のHCアルゴリズムの1573ステップ目に成功した．最大繰り返し回数は2000回
+なので，世代は159573である．図は図\ref{150s}に示す．
+
+\begin{figure}[htb]
+ \begin{center}
+  \includegraphics[width=14cm, clip, bb=-250 0 588 341]{violation150s.jpg}
+  \caption{疎結合問題(150)の探索過程(繰り返し山登り法)}
+  \label{150s}
+ \end{center}
+\end{figure}
+
+\subsubsection*{密結合(問題サイズ30)}
+HCアルゴリズムの85ステップ目に成功した．図は図\ref{30d}に示す．
+\begin{figure}[htb]
+ \begin{center}
+  \includegraphics[width=14cm, clip, bb=-250 0 587 343]{violation30d.jpg}
+  \caption{密結合問題(30)の探索過程(山登り法)}
+  \label{30d}
+ \end{center}
+\end{figure}
+\newpage
+\subsubsection*{密結合(問題サイズ60)}
+HCアルゴリズムの172ステップ目に成功した．図は図\ref{60d}に示す．
+\begin{figure}[htb]
+ \begin{center}
+  \includegraphics[width=14cm, clip, bb=-250 0 592 340]{violation60d.jpg}
+  \caption{密結合問題(60)の探索過程(山登り法)}
+  \label{60d}
+ \end{center}
+\end{figure}
+
+\subsubsection*{密結合(問題サイズ90)}
+HCアルゴリズムの267ステップ目に成功した．図は図\ref{90d}に示す．
+\begin{figure}[htb]
+ \begin{center}
+  \includegraphics[width=14cm, clip, bb=-250 0 589 342]{violation90d.jpg}
+  \caption{密結合問題(90)の探索過程(山登り法)}
+  \label{90d}
+ \end{center}
+\end{figure}
+\newpage
+\subsubsection*{密結合(問題サイズ120)}
+HCアルゴリズムの402ステップ目に成功した．図は図\ref{120d}に示す．
+\begin{figure}[htb]
+ \begin{center}
+  \includegraphics[width=14cm, clip, bb=-250 0 587 347]{violation120d.jpg}
+  \caption{密結合問題(120)の探索過程(山登り法)}
+  \label{120d}
+ \end{center}
+\end{figure}
+
+\subsubsection*{密結合(問題サイズ150)}
+HCアルゴリズムの587ステップ目に成功した．図は図\ref{150d}に示す．
+\begin{figure}[htb]
+ \begin{center}
+  \includegraphics[width=14cm, clip, bb=-250 0 586 341]{violation150d.jpg}
+  \caption{密結合問題(150)の探索過程(山登り法)}
+  \label{150d}
+ \end{center}
+\end{figure}
+
+\subsection*{ソースコード}
+\begin{lstlisting}[caption=HC.c, label=HC.c, xleftmargin=1cm]
+#define RED 0
+#define GREEN 1
+#define BLUE 2
+
+int main(void){
+
+  // seed 509
+  srand(509);
+
+  const int size[5] = {30, 60, 90, 120, 150}; // number of nodes
+  const int N = size[0]; // which to use? NN[0] to NN[4] or something int value
+  const int maxloop = 200; // the maximum number of iterations for HC algorithm
+
+  int graph[N][N]; // graph
+  int solution[N];  // solution candidates
+  int violation = 0; // violation points
+  int violationArray[N]; // if violation=1 then 1 else 0
+  int Rv = 0;  // RED violation
+  int Gv = 0;  // GREEN violation
+  int Bv = 0;  // BLUE violation
+  int changeVar = 0; // change value
+
+  ////// HC algorithm
+  // make initial value(input RED or GREEN or BLUE)
+  for(i=0; i<N; i++){
+    solution[i] = 3.0 * (rand()/(RAND_MAX+1.0));
+  }
+  
+  // hill climbing start
+  for(k=0; k<maxloop; k++){
+    // init  violation and violationArray
+    violation = 0;
+    for(i=0; i<N; i++){
+      violationArray[i] = 0;
+    }
+
+    // calc Violation points and updaate violationArray
+    for(i = 0; i < N; i++){
+      for(j = i + 1; j < N; j++){
+        if(graph[i][j] == 1 && solution[i] == solution[j]){
+          violation++;
+          violationArray[i] = 1;
+          violationArray[j] = 1;
+        }        
+      }
+    }
+    
+    // end determination
+    if(violation == 0){
+      loopCount++;
+      printf("completed!! %d loops\n", k);
+      return 0;
+    }
+    
+    //// change variable
+    changeVar = 0;
+    // select variable, ex)[0,1,1,0,0,1]
+    count = 0;
+    for(i = 0; i < N; i++){
+      if(violationArray[i] == 1){ // pick up violation variable, ex)[1,1,1]
+        count++;
+      }
+    }
+    // select random, ex)if changeVar = 1 then [1, changeVar, 1] 
+    changeVar = (double)count * (rand()/(RAND_MAX+1.0)); 
+
+    count = -1;   // becouse of origin 0. After first count++ , count = 0;
+    for(i = 0; i < N; i++){
+      if(violationArray[i] == 1){
+        count++;
+      }
+      if(count == changeVar){
+        changeVar = i;  // input changeVar to violationArray, ex)[0,1,changeVar,0,0,1]
+        break;
+      }
+    }
+    
+    // if color is change to XXX then violation is ??? point
+    Rv = 0; // XXX = RED, ??? = Rv
+    Gv = 0; // XXX = GREEN, ??? = Gv
+    Bv = 0; // XXX = BLUE, ??? = Bv
+    for(i = 0; i < N; i++){
+      if(graph[changeVar][i] == 1){ // if there is link (column)
+        if(RED == solution[i]){ // if RED
+          Rv++;
+        }
+        else if(GREEN == solution[i]){ // if GREEN
+          Gv++;
+        }
+        else if(BLUE == solution[i]){ // if BLUE
+          Bv++;
+        }
+      }
+      if(graph[i][changeVar] == 1){ // if there is link (row)
+        if(RED == solution[i]){ // if RED
+          Rv++;
+        }
+        else if(GREEN == solution[i]){ // if GREEN
+          Gv++;
+        }
+        else if(BLUE == solution[i]){ // if BLUE
+          Bv++;
+        }
+      }
+    }
+    
+    //change value (use min violation coler)(if same then random)
+    if(Rv < Bv){
+      if(Rv < Gv)
+        solution[changeVar] = RED;
+      else if(Gv < Rv)
+        solution[changeVar] = GREEN;
+      else if(Gv == Rv){ // RED = 0 or GREEN = 1
+        solution[changeVar] = 2.0 * rand()/(RAND_MAX+1.0); // (double)[0,2) -> (int)0 or 1
+      }
+    }
+    else if(Bv < Rv){
+      if(Bv < Gv)
+        solution[changeVar] = BLUE;
+      else if(Gv < Bv)
+        solution[changeVar] = GREEN;
+      else if(Gv == Bv){ // GRENN = 1 or BLUE = 2
+        solution[changeVar] = (2.0 * rand()/(RAND_MAX+1.0)) + 1.0; // (double)[0,2) + 1.0 -> (int)1 or 2
+      }
+    }
+    else if(Rv == Bv){
+      if(Gv < Rv)
+        solution[changeVar] = GREEN;
+      else if(Rv < Gv){ // RED = 0 or BLUE = 2
+        r = 2.0 * rand()/(RAND_MAX+1.0); // (double)[0,2) -> (int)0 or 1
+        if(r == 1){ // 0 or 1 -> if r=1 then r=2 -> 0 or 2
+          r = 2;  // 0 or 2
+        }
+        solution[changeVar] = r;
+      }
+      else if(Rv == Gv){ // RED = 0 or GREEN = 1 or BLUE = 2
+        solution[changeVar] = 3.0 * (rand()/(RAND_MAX+1.0)); // (double)[0,3) -> (int)0 or 1 or 2
+      }
+    }
+    // end 1 step
+  }
+  return 0;
+}
+\end{lstlisting}
+
+\end{document}
