@@ -210,7 +210,7 @@ int main(void){
       }
     }
     else if(Rv == Bv){
-      if(Gv < Rv)
+     if(Gv < Rv)
 	solution[changeVar] = GREEN;
       else if(Rv < Gv){ // RED = 0 or BLUE = 2
 	r = 2.0 * rand()/(RAND_MAX+1.0); // (double)[0,2) -> (int)0 or 1

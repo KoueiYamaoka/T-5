@@ -18,10 +18,10 @@ int main(void){
   // seed 509
   srand(509);
   
-  int select = 0;
-  int plus = 1; // if 0 then (lambda,mu)-ES, if 1 then (lambda+mu)-ES
+  int select = 3;
+  int plus = 0; // if 0 then (lambda,mu)-ES, if 1 then (lambda+mu)-ES
   int mu = 200;// number of parents
-  int lambda = 1000; // number of children
+  int lambda = 1400; // number of children
   int count = 0;
   int aveCount[10] = {0,0,0,0,0,0,0,0,0,0};
 
