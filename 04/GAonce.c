@@ -11,16 +11,16 @@
 int main(void){  
   
   // seed 509
-
+  srand(509);
   
-  int select = 2; // select size
+  int select = 1; // select size
   int prob = 1; // if 0 then dense, if 1 then sperse
   int SoP = 2000; // size of population 
-  double mutationRate = 0.5; // mutation rate (%)
-  int scaling = 1; // scaling. if 0 then nothing, 1 then linear, 2 then power
-  int d = 1; // for power scaling. pow(x, d)
+  double mutationRate = 8; // mutation rate (%)
+  int scaling = 2; // scaling. if 0 then nothing, 1 then linear, 2 then power
+  int d = 50; // for power scaling. pow(x, d)
 
-  int count = 5;
+  int count = 0;
   int loops[10] = {0,0,0,0,0,0,0,0,0,0};
 
   const int size[5] = {30, 60, 90, 120, 150}; // number of nodes
@@ -66,7 +66,7 @@ int main(void){
     aveF[i] = 0;
   }
   
-  // input AdjacencyMatrix
+  // Input AdjacencyMatrix
   // please use makeAdjacencyMatrix.c to make AdjacencyMatrix
   FILE *fp;
   char filename[256];
@@ -98,9 +98,26 @@ int main(void){
   // close
   fclose(fp);
 
- loop:printf("seed = %d: ",seeds[count]);
-  srand(seeds[count]);
-  
+ loop:srand(seeds[count]);
+  printf("seed = %d: ",seeds[count]);
+
+
+   //init
+  for(i=0; i<SoP; i++){
+    for(j=0; j<N; j++){
+      parent[i][j] = 0;
+      children[i][j] = 0;
+    }
+    fitness[i] = 0;
+    roulette[i] = 0;
+  }
+  for(i=0; i<N; i++){
+    mask[i] = 0;
+  }
+  for(i=0; i<maxloop; i++){
+    maxF[i] = 0;
+    aveF[i] = 0;
+  }
 
   
   // start Genetic Algorithm
@@ -186,6 +203,7 @@ int main(void){
     // end determination
     if(maxF[k] == 1.0){
       printf("completed!!  d = %d: %dloop\n", d, k);
+
       loops[count] = k;
       goto next;
       //      return 0;
