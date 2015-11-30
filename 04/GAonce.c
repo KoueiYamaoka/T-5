@@ -13,22 +13,24 @@ int main(void){
   // seed 509
   srand(509);
   
-  int select = 1; // select size
-  int prob = 1; // if 0 then dense, if 1 then sperse
+  int select = 2; // select size
+  int prob = 0; // if 0 then dense, if 1 then sperse
   int SoP = 2000; // size of population 
-  double mutationRate = 8; // mutation rate (%)
+  double mutationRate = 0.5; // mutation rate (%)
   int scaling = 2; // scaling. if 0 then nothing, 1 then linear, 2 then power
-  int d = 50; // for power scaling. pow(x, d)
+  int d = 1; // for power scaling. pow(x, d)
+  int linear = 105;
+  int name = 2005;
 
   int count = 0;
-  int loops[10] = {0,0,0,0,0,0,0,0,0,0};
+  int loops[49];
 
   const int size[5] = {30, 60, 90, 120, 150}; // number of nodes
   const int N = size[select]; // which to use? NN[0] to NN[4] or something int value
   const int links[2] = {N * (N - 1) / 4 // number of links for dense
 			, 3 * N}; // number of links for sparse
   const int maxloop = 2000; // the maximum number of iterations for ES
-  const int seeds[10] = {509, 521, 523, 541, 547, 557, 563, 569, 571, 577}; // seeds
+  //  const int seeds[10] = {509, 521, 523, 541, 547, 557, 563, 569, 571, 577}; // seeds
 
   int graph[N][N];  // AdjacencyMatrix
   int parent[SoP][N+1]; // (parent solution + violation point or fitness) * SoP
@@ -98,9 +100,8 @@ int main(void){
   // close
   fclose(fp);
 
- loop:srand(seeds[count]);
-  printf("seed = %d: ",seeds[count]);
-
+ loop:srand(509);
+  printf("d=%d: ",d);
 
    //init
   for(i=0; i<SoP; i++){
@@ -204,7 +205,7 @@ int main(void){
     if(maxF[k] == 1.0){
       printf("completed!!  d = %d: %dloop\n", d, k);
 
-      loops[count] = k;
+      loops[d-1] = k;
       goto next;
       //      return 0;
     }
@@ -293,53 +294,45 @@ int main(void){
     }
     // end 1 genaration loop
   }
-
-  /*   OUTPUT:printf("");
-
-    // for sparse
-    sprintf(filename, "violation%dSP.csv", N);
-    // open file
-    if((fp = fopen(filename, "w")) == NULL){
-      printf("file open error.\n");
-      exit(EXIT_FAILURE);
-    }
-    // write
-    int loops;
-    if(tmp < 100)
-      loops = 100;
-    else
-      loops = (tmp % 100) * 100;
-
-    for(i=0; i<loops; i++){
-      fprintf(fp, "%d, ", i);
-    }
-    fprintf(fp, "%d\n", loops);
-
-    for(i=0; i<=tmp; i++){
-      fprintf(fp, "%d, ", maxVP[i]);
-    }
-    fprintf(fp, "\n");
-
-    for(i=0; i<=tmp; i++){
-      fprintf(fp, "%d, ", aveVP[i]);
-    }
-    fprintf(fp, "\n");
-
-    for(i=0; i<=tmp; i++){
-      fprintf(fp, "%d, ", minVP[i]);
-    }
-    fprintf(fp, "\n");
-
-    // close
-    fclose(fp);
-  */
+  
   printf("Genetic algorithm failed...\n");
+  loops[d-1] = 0;
   goto next;
- 
+  
+ OUTPUT:printf(" ");
+  
+    // for sparse
+  sprintf(filename, "fitness%dD%d.csv", N, name);
+  // open file
+  if((fp = fopen(filename, "w")) == NULL){
+    printf("file open error.\n");
+    exit(EXIT_FAILURE);
+  }
+  // write
+  for(i=1; i<50; i++){
+    fprintf(fp, "%d, ", i);
+  }
+  fprintf(fp, "50\n");
 
+  for(i=0; i<50; i++){
+    fprintf(fp, "%d, ", linear);
+  }
+  fprintf(fp, "\n");
+  
+  for(i=0; i<50; i++){
+    fprintf(fp, "%d, ", loops[i]);
+  }
+  fprintf(fp, "\n");
+  
+  // close
+  fclose(fp);
+  return 0;
+
+  
   // for loop test
- next: count++;
-  if(count == 10){
+ next: d++;
+  if(d == 51){
+    goto OUTPUT;
     int sum = 0;
     int tmp = 0;
     for(i=0;i<10;i++){
