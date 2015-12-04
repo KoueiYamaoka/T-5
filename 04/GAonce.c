@@ -14,13 +14,13 @@ int main(void){
   srand(509);
   
   int select = 2; // select size
-  int prob = 0; // if 0 then dense, if 1 then sperse
-  int SoP = 2000; // size of population 
-  double mutationRate = 0.5; // mutation rate (%)
+  int prob = 1; // if 0 then dense, if 1 then sperse
+  int SoP = 500; // size of population 
+  double mutationRate = 3; // mutation rate (%)
   int scaling = 2; // scaling. if 0 then nothing, 1 then linear, 2 then power
   int d = 1; // for power scaling. pow(x, d)
-  int linear = 105;
-  int name = 2005;
+  int linear = 0;
+  int name = 530;
 
   int count = 0;
   int loops[49];
@@ -302,7 +302,7 @@ int main(void){
  OUTPUT:printf(" ");
   
     // for sparse
-  sprintf(filename, "fitness%dD%d.csv", N, name);
+  sprintf(filename, "fitness%dS%d.csv", N, name);
   // open file
   if((fp = fopen(filename, "w")) == NULL){
     printf("file open error.\n");
