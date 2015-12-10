@@ -7,37 +7,33 @@
 #define GREEN 1
 #define BLUE 2
 
-// for qsort
-int compare_int(const void *a, const void *b){
-  return *(int*)a - *(int*)b;
-}
-
 int main(void){  
   
   // seed 509
   srand(509);
 
   
-  int select = 4; // select size
+  int select = 3; // select size
   int prob = 1; // if 0 then dense, if 1 then sperse
   int SoP = 500; // size of population 
   double mutationRate = 3; // mutation rate (%)
   int scaling = 2; // scaling. if 0 then nothing, 1 then linear, 2 then power
-  int d = 35; // for power scaling. pow(x, d)
-  int Ne = 20; // use top Ne gene to HC 
+  int d = 1; // for power scaling. pow(x, d)
+  int Ne = 20; // use top Ne gene to HC
+  int name = 510;
+  int linear = 272087;
 
   const int size[5] = {30, 60, 90, 120, 150}; // number of nodes
   const int N = size[select]; // which to use? NN[0] to NN[4] or something int value
   const int links[2] = {N * (N - 1) / 4 // number of links for dense
 			, 3 * N}; // number of links for sparse
-  const int maxloop = 500; // the maximum number of iterations for GA
-  const int maxloopH = 500; // the maximum number of iterations for HC
+  const int maxloop = 1000; // the maximum number of iterations for GA
+  const int maxloopH = 1000; // the maximum number of iterations for HC
   const int seeds[10] = {509, 521, 523, 541, 547, 557, 563, 569, 571, 577}; // seeds
 
   int graph[N][N];  // AdjacencyMatrix
   int parent[SoP][N+1]; // (parent solution + violation point or fitness) * SoP
   int children[SoP][N+1]; // (children solution + violation point or fitness) * SoP
-  int topChildren[Ne][N];
   int violation = 0; // violation point
   int calcCount = 0; // The number of calculations
   double fitness[SoP]; // fitness
@@ -59,11 +55,14 @@ int main(void){
   int Bv = 0;  // BLUE violation
   int changeVar = 0; // change value
   int r = 0; // random number
+  int count;
   
   int i, j, k, l, m; // for for loop
   int tmp;
   double tmpd;
-  int count;
+  int loops = 0;
+  int calcs[10] = {0,0,0,0,0,0,0,0,0,0};
+  int calcsd[50];
 
   //init
   for(i=0; i<SoP; i++){
@@ -113,6 +112,8 @@ int main(void){
   }
   // close
   fclose(fp);
+
+ loop:srand(509);
 
   
   // start hybrid Genetic Algorithm
@@ -192,7 +193,7 @@ int main(void){
   // end determination
   if(maxF[0] == 1.0){
     printf("completed!! in init value\n");
-    return 0;
+    goto next;
   }
   
   //// start generation loop
@@ -318,6 +319,14 @@ int main(void){
       }
     }
     aveF[k] = sum / SoP;
+    // sort topNe by insertion
+    for(i=1; i<Ne; i++){
+      tmp = topNe[i];
+      for(j=i; j>0 && fitness[topNe[j-1]] < fitness[tmp]; j--){
+	topNe[j] = topNe[j-1];
+      }
+      topNe[j] = tmp;
+    }
 
     // scaling
     // if scaling = 0 then nothing
@@ -348,7 +357,7 @@ int main(void){
     // end determination
     if(maxF[k] == 1.0){
       printf("completed!!  d = %d: %dloop\n", d, k);
-      return 0;
+      goto next;
     }
 
     //// HC start
@@ -379,7 +388,7 @@ int main(void){
 	// end determination
 	if(violation == 0){
 	  printf("completed in HC!! %d loops, topNe = %d, clear at %d GA\n", m, l, k);
-	  return 0;
+	  goto next;
 	}
     
 	// change variable
@@ -483,65 +492,62 @@ int main(void){
     // end 1 genaration loop
   }
 
-  /*   OUTPUT:printf("");
-
-    // for sparse
-    sprintf(filename, "violation%dSP.csv", N);
-    // open file
-    if((fp = fopen(filename, "w")) == NULL){
-      printf("file open error.\n");
-      exit(EXIT_FAILURE);
-    }
-    // write
-    int loops;
-    if(tmp < 100)
-      loops = 100;
-    else
-      loops = (tmp % 100) * 100;
-
-    for(i=0; i<loops; i++){
-      fprintf(fp, "%d, ", i);
-    }
-    fprintf(fp, "%d\n", loops);
-
-    for(i=0; i<=tmp; i++){
-      fprintf(fp, "%d, ", maxVP[i]);
-    }
-    fprintf(fp, "\n");
-
-    for(i=0; i<=tmp; i++){
-      fprintf(fp, "%d, ", aveVP[i]);
-    }
-    fprintf(fp, "\n");
-
-    for(i=0; i<=tmp; i++){
-      fprintf(fp, "%d, ", minVP[i]);
-    }
-    fprintf(fp, "\n");
-
-    // close
-    fclose(fp);
-  */
   printf("Genetic algorithm failed...\n");
-  //  goto next;
- 
+  calcCount = 0;
+  goto next;
 
+ OUTPUT:printf(" ");
+
+  // for sparse
+  sprintf(filename, "max%dS.csv", name);
+  // open file
+  if((fp = fopen(filename, "w")) == NULL){
+    printf("file open error.\n");
+    exit(EXIT_FAILURE);
+  }
+  // write
+  for(i=1; i<=50; i++){
+    fprintf(fp, "%d, ", i);
+  }
+  fprintf(fp, "\n");
+  
+  for(i=1; i<=50; i++){
+    fprintf(fp, "%d, ",linear);
+  }
+  fprintf(fp, "\n");
+  
+  for(i=1; i<=50; i++){
+    fprintf(fp, "%d, ", calcsd[i]);
+  }
+  fprintf(fp, "\n");
+  
+  // close
+  fclose(fp);
+  return 0;
+  
   // for loop test
-  /* next: count++;
-  if(count == 10){
+ next: puts(" ");
+  calcsd[d] = calcCount;
+  calcCount = 0;
+  d++;
+  printf("%d, ",d);
+  if(d == 51){
     int sum = 0;
     int tmp = 0;
-    for(i=0;i<10;i++){
-      if(loops[i] != 0){
-	sum += loops[i];
+    printf("calcs = ");
+    for(i=1;i<=50;i++){
+      if(calcsd[i] != 0){
+	printf("%d:%d, ",i, calcsd[i]);
+	sum += calcsd[i];
 	tmp++;
       }
     }
+    puts("");
     if(sum != 0)
       printf("ave = %d, %d clear\n",(sum / tmp), tmp);
-    return 0;
+    goto OUTPUT;
   }
   goto loop;
-  */
+  
   return 0;
 }
