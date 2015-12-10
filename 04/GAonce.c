@@ -13,24 +13,23 @@ int main(void){
   // seed 509
   srand(509);
   
-  int select = 2; // select size
+  int select = 0; // select size
   int prob = 0; // if 0 then dense, if 1 then sperse
-  int SoP = 2000; // size of population 
-  double mutationRate = 0.5; // mutation rate (%)
+  int SoP = 500; // size of population 
+  double mutationRate = 0.1; // mutation rate (%)
   int scaling = 2; // scaling. if 0 then nothing, 1 then linear, 2 then power
-  int d = 1; // for power scaling. pow(x, d)
-  int linear = 105;
-  int name = 2005;
+  int d = 32; // for power scaling. pow(x, d)
+  int minv = 0;
 
   int count = 0;
-  int loops[49];
+  int loops[10];
 
   const int size[5] = {30, 60, 90, 120, 150}; // number of nodes
   const int N = size[select]; // which to use? NN[0] to NN[4] or something int value
   const int links[2] = {N * (N - 1) / 4 // number of links for dense
 			, 3 * N}; // number of links for sparse
   const int maxloop = 2000; // the maximum number of iterations for ES
-  //  const int seeds[10] = {509, 521, 523, 541, 547, 557, 563, 569, 571, 577}; // seeds
+  const int seeds[10] = {509, 521, 523, 541, 547, 557, 563, 569, 571, 577}; // seeds
 
   int graph[N][N];  // AdjacencyMatrix
   int parent[SoP][N+1]; // (parent solution + violation point or fitness) * SoP
@@ -39,9 +38,9 @@ int main(void){
   double fitness[SoP]; // fitness
   double roulette[SoP]; // roulette for select parents
   int mask[N]; // mask bit for crossing
-  double maxF[maxloop]; // max fitness for output
-  double aveF[maxloop]; // ave fitness for output
-  double minF[maxloop]; // min fitness for output
+  double maxF[10][maxloop]; // max fitness for output
+  double aveF[10][maxloop]; // ave fitness for output
+  double minF[10][maxloop]; // min fitness for output
   double sum = 0;// for maxF, aveF, minF, roulette
   double sp1 = 0; // selected parent 1
   double sp2 = 0; // selected parent 2
@@ -63,9 +62,11 @@ int main(void){
   for(i=0; i<N; i++){
     mask[i] = 0;
   }
-  for(i=0; i<maxloop; i++){
-    maxF[i] = 0;
-    aveF[i] = 0;
+  for(j=0; j<10; j++){
+    for(i=0; i<maxloop; i++){
+      maxF[j][i] = 0;
+      aveF[j][i] = 0;
+    }
   }
   
   // Input AdjacencyMatrix
@@ -100,8 +101,8 @@ int main(void){
   // close
   fclose(fp);
 
- loop:srand(509);
-  printf("d=%d: ",d);
+ loop:srand(seeds[count]);
+  printf("seeds=%d: ",seeds[count]);
 
    //init
   for(i=0; i<SoP; i++){
@@ -114,10 +115,6 @@ int main(void){
   }
   for(i=0; i<N; i++){
     mask[i] = 0;
-  }
-  for(i=0; i<maxloop; i++){
-    maxF[i] = 0;
-    aveF[i] = 0;
   }
 
   
@@ -153,34 +150,27 @@ int main(void){
     }
 
     // input max, ave, min
-    minF[k] = 1;
+    minF[count][k] = 1;
     sum = 0;
     for(i=0; i<SoP; i++){
       // max
-      if(maxF[k] < fitness[i]){
-	maxF[k] = fitness[i];
+      if(maxF[count][k] < fitness[i]){
+	maxF[count][k] = fitness[i];
       }
       // ave
       sum += fitness[i];
       // min
-      if(minF[k] > fitness[i]){
-	minF[k] = fitness[i];
+      if(minF[count][k] > fitness[i]){
+	minF[count][k] = fitness[i];
       }
     }
-    aveF[k] = sum / SoP;
+    aveF[count][k] = sum / SoP;
     // for debug
     // printf("maxF[%d] = %f, aveF[%d] = %f, minF[%d] = %f\n", k, maxF[k], k, aveF[k], k, minF[k]);
     
 
     // scaling
     // if scaling = 0 then nothing
-    if(scaling == 1){ // then linear scaling
-      sum = 0;
-      for(i=0; i<SoP; i++){
-	fitness[i] = (fitness[i] - minF[k]) / (maxF[k] - minF[k]);
-	sum += fitness[i];
-      }
-    }
     if(scaling == 2){ // then power scaling
       sum = 0;
       for(i=0; i<SoP; i++){
@@ -202,10 +192,9 @@ int main(void){
 
     
     // end determination
-    if(maxF[k] == 1.0){
-      printf("completed!!  d = %d: %dloop\n", d, k);
-
-      loops[d-1] = k;
+    if(maxF[count][k] == 1.0){
+      printf("completed!!  d = %d: %dloop, max = %f\n", d, k, maxF[count][k]);
+      loops[count] = k;
       goto next;
       //      return 0;
     }
@@ -295,32 +284,36 @@ int main(void){
     // end 1 genaration loop
   }
   
-  printf("Genetic algorithm failed...\n");
-  loops[d-1] = 0;
+  printf("Genetic algorithm failed... maxF=%f, \n", maxF[count][maxloop-1]);
+  loops[count] = maxloop-1;
   goto next;
   
  OUTPUT:printf(" ");
   
-    // for sparse
-  sprintf(filename, "fitness%dD%d.csv", N, name);
+  // for sparse
+  sprintf(filename, "max%dD%d.csv", N, seeds[minv]);
   // open file
   if((fp = fopen(filename, "w")) == NULL){
     printf("file open error.\n");
     exit(EXIT_FAILURE);
   }
   // write
-  for(i=1; i<50; i++){
+  for(i=0; i<loops[minv]; i++){
     fprintf(fp, "%d, ", i);
   }
-  fprintf(fp, "50\n");
+  fprintf(fp, "%d\n", loops[minv]);
 
-  for(i=0; i<50; i++){
-    fprintf(fp, "%d, ", linear);
+  for(i=0; i<=loops[minv]; i++){
+    fprintf(fp, "%f, ", maxF[minv][i]);
   }
   fprintf(fp, "\n");
   
-  for(i=0; i<50; i++){
-    fprintf(fp, "%d, ", loops[i]);
+  for(i=0; i<=loops[minv]; i++){
+    fprintf(fp, "%f, ", aveF[minv][i]);
+  }
+  fprintf(fp, "\n");
+  for(i=0; i<=loops[minv]; i++){
+    fprintf(fp, "%f, ", minF[minv][i]);
   }
   fprintf(fp, "\n");
   
@@ -330,19 +323,34 @@ int main(void){
 
   
   // for loop test
- next: d++;
-  if(d == 51){
-    goto OUTPUT;
-    int sum = 0;
-    int tmp = 0;
+ next: count++;
+  if(count == 10){
+    double sum = 0;
+    int ls = 0;
+    double ave = 0;
+    double sig = 0;
+    double ssig = 0;
+    double max = 0;
     for(i=0;i<10;i++){
-      if(loops[i] != 0){
-	sum += loops[i];
-	tmp++;
+      sum += maxF[i][loops[i]];
+      ls += loops[i];
+      printf("%f\n", maxF[i][loops[i]]);
+      if(max < maxF[i][loops[i]]){
+	max = maxF[i][loops[i]];
+	minv = i;
       }
     }
+    ave = sum / 10;
+    ls /= 10;
+    for(i=0; i<10; i++){
+      sig += pow((maxF[i][loops[i]] - ave), 2);
+    }
+    sig = sig / 10;
+    ssig = sqrt(sig);
     if(sum != 0)
-      printf("ave = %d, %d clear\n",(sum / tmp), tmp);
+      printf("sum=%f, ave=%f, sig=%f, ssig=%f, ls=%d end\n", sum, ave, sig, ssig, ls);
+    goto OUTPUT;
+        
     return 0;
   }
   goto loop;
