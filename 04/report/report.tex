@@ -1,0 +1,647 @@
+\documentclass[a4j]{jarticle}
+\title{進化的アルゴリズムレポート \ 課題4}
+\author{情報科学類, 3年, 2クラス, 学籍番号：201311403 \ 山岡 洸瑛, Yamaoka
+Kouei}
+\西暦
+\date{}
+
+%余白設定
+\setlength{\topmargin}{20mm}
+\addtolength{\topmargin}{-1in}
+\setlength{\oddsidemargin}{20mm}
+\addtolength{\oddsidemargin}{-1in}
+\setlength{\evensidemargin}{15mm}
+\addtolength{\evensidemargin}{-1in}
+\setlength{\textwidth}{170mm}
+\setlength{\textheight}{254mm}
+\setlength{\headsep}{0mm}
+\setlength{\headheight}{0mm}
+\setlength{\topskip}{0mm}
+
+
+\def\pgfsysdriver{pgfsys-dvipdfmx.def}
+
+\usepackage{ascmac}
+\usepackage{here}
+\usepackage{tikz}
+\usetikzlibrary{trees}
+\thispagestyle{empty}
+\usepackage{bm}
+
+\usepackage{listings,jlisting}
+\renewcommand{\lstlistingname}{リスト}
+\lstset{
+basicstyle=\ttfamily\scriptsize,
+commentstyle=\textit,
+classoffset=1,
+keywordstyle=\bfseries,
+frame=tRBl,
+framesep=5pt,
+showstringspaces=false,
+numbers=left,
+stepnumber=1,
+numberstyle=\tiny,
+tabsize=2
+}
+
+\begin{document}
+\maketitle
+\section*{遺伝的アルゴリズム(GA)によるグラフ色塗り問題の解決}
+
+\subsection*{GAのアルゴリズムとデータ構造}
+アルゴリズムは示されたものと同様のため省略する．違反点数は配列サイズを1
+つ大きく用意し，配列最後に格納した．適応度については別の配列を用意した．
+
+\section*{実験}
+\subsection*{実験条件(各種パラメータ)}
+以下に各種パラメータの値を示す．なお，10個の乱数のシード値は\{509, 521, 523, 541,
+547, 557, 563, 569, 571, 577\}とした．1つのみ用いる場合は509とした，
+
+\subsection*{問題サイズ(ノード数)}
+問題サイズは疎結合，密結合共に30, 60, 90, 120, 150とした．
+
+\subsection*{世代の上限}
+世代の上限は2000とした．これは以下の実験により得た十分大きな値である．
+複数回計算する前提なら，より小さな値でも問題ないだろう．
+
+\subsection*{集団サイズ，スケーリング，突然変異確率の調整}
+集団サイズ，スケーリング，突然変異確率の調整を行う．調整は以下の方法で行
+う．
+\begin{itemize}
+ \item 集団サイズは500, 1000, 2000の3通りを試す．
+ \item スケーリングは線形スケーリングと冪乗スケーリングについて試す．
+ \item 線形スケーリングはシード値を変えながら10回計算し，成功した場合の平均の世代
+       を使用する．
+ \item 冪乗スケーリングはシード値509を用いて1乗から50乗まで1度ずつ計算す
+       る．
+ \item スケーリングをしない場合については1乗の冪乗スケーリングにあたるた
+       め，上記でまとめて行う
+ \item 突然変異確率は0.1\%, 0,5\%, 1\%, 3\%の4通りについて行う．
+\end{itemize}
+これらをグラフにまとめ，図\ref{501d}から図\ref{2030s}に示す．以下の図にお
+いて縦軸は成功した場合の世代数．横軸は冪乗スケーリングのパラメータで，何
+乗かを示している．失敗は世代数0
+として示している．また，線形ス
+ケーリングについて特に断りがない場合，100\%成功か，全て失敗かのどちらか
+であり，成功率がその他の場合は，グラフの凡例に表示している．\\\ \ \ 
+疎結合問題については線形グラフ，密結合問題については，縦軸をlogスケール
+にしている．そのため，密結合問題では，世代数0はグラフに示されていない．
+
+
+\subsubsection*{密結合問題}
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 451 280]{pic/501d.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率0.1\%}
+  \label{501d}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 459 280]{pic/505d.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率0.5\%}
+  \label{505d}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 458 279]{pic/510d.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率1\%}
+  \label{510d}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 452 282]{pic/530d.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率3\%}
+  \label{530d}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 449 277]{pic/1001d.jpg}
+  \end{center}
+  \caption{集団サイズ1000, 変異率0.1\%}
+  \label{1001d}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 460 282]{pic/1005d.jpg}
+  \end{center}
+  \caption{集団サイズ1000, 変異率0.5\%}
+  \label{1005d}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 451 279]{pic/1010d.jpg}
+  \end{center}
+  \caption{集団サイズ1000, 変異率1\%}
+  \label{1010d}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 456 282]{pic/1030d.jpg}
+  \end{center}
+  \caption{集団サイズ1000, 変異率3\%}
+  \label{1030d}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 451 279]{pic/1010d.jpg}
+  \end{center}
+  \caption{集団サイズ1000, 変異率1\%}
+  \label{1010d}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 456 282]{pic/1030d.jpg}
+  \end{center}
+  \caption{集団サイズ1000, 変異率3\%}
+  \label{1030d}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 460 280]{pic/2001d.jpg}
+  \end{center}
+  \caption{集団サイズ2000, 変異率0.1\%}
+  \label{2001d}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 462 280]{pic/2005d.jpg}
+  \end{center}
+  \caption{集団サイズ2000, 変異率0.5\%}
+  \label{2005d}
+ \end{minipage}
+\end{figure}
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 451 278]{pic/2010d.jpg}
+  \end{center}
+  \caption{集団サイズ2000, 変異率1\%}
+  \label{2010d}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 451 276]{pic/2030d.jpg}
+  \end{center}
+  \caption{集団サイズ2000, 変異率3\%}
+  \label{2030d}
+ \end{minipage}
+\end{figure}
+
+\clearpage
+\subsubsection*{疎結合問題}
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 452 277]{pic/501s.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率0.1\%}
+  \label{501s}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 449 280]{pic/505s.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率0.5\%}
+  \label{505s}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 456 281]{pic/510s.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率1\%}
+  \label{510s}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 454 272]{pic/530s.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率3\%}
+  \label{530s}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 457 274]{pic/1001s.jpg}
+  \end{center}
+  \caption{集団サイズ1000, 変異率0.1\%}
+  \label{1001s}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 450 281]{pic/1005s.jpg}
+  \end{center}
+  \caption{集団サイズ1000, 変異率0.5\%}
+  \label{1005s}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 451 279]{pic/1010s.jpg}
+  \end{center}
+  \caption{集団サイズ1000, 変異率1\%}
+  \label{1010s}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 450 279]{pic/1030s.jpg}
+  \end{center}
+  \caption{集団サイズ1000, 変異率3\%}
+  \label{1030s}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 452 277]{pic/501s.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率0.1\%}
+  \label{501s}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 449 280]{pic/505s.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率0.5\%}
+  \label{505s}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 457 276]{pic/2001s.jpg}
+  \end{center}
+  \caption{集団サイズ2000, 変異率0.1\%}
+  \label{2001s}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 452 273]{pic/2005s.jpg}
+  \end{center}
+  \caption{集団サイズ2000, 変異率0.5\%}
+  \label{2005s}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 457 279]{pic/2010s.jpg}
+  \end{center}
+  \caption{集団サイズ2000, 変異率1\%}
+  \label{2010s}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 456 279]{pic/2030s.jpg}
+  \end{center}
+  \caption{集団サイズ2000, 変異率3\%}
+  \label{2030s}
+ \end{minipage}
+\end{figure}
+
+
+\clearpage
+\subsection*{集団サイズ，スケーリング，突然変異確率の決定}
+以上の図よりパラメータを決定する．まず，密結合問題について決定する．図
+\ref{501d}より集団サイズ500で十分成功しているため，パラメータは集団サイ
+ズを500, スケーリングは最も世代が小さい32乗の冪乗スケーリング，突然変異
+確率は0.1\%とする．\\\ \ \ 
+次に疎結合問題について決定する．集団サイズが大きい場合に比較的成功率が良
+いが，最も成功してる図\ref{2030s}を採用する．従って集団サイズは2000，ス
+ケーリングは良く成功している$d=23〜41$の中央値32を用いて，32乗の冪乗スケー
+リングとする．突然変異確率は3\%とする．\\\ \ \ 
+グラフの傾向から，密結合問題は突然変異確率か小さいほど少ない世代数で成功
+し，集団サイズもそれほど必要ないと言える．とくに突然変異確率が3\%を超え
+ると，線形スケーリングでは解けなくなってしまう．これは制約の多さから，初
+期集団で発生させた個体の探索空間で十分だったためであると考える．\\\ \ \ 
+対して疎結合問題は突然変異確率，集団サイズ共に大きくしないと成功せず，大
+きくすればするほど成功率は上がっていくように見える．また線形スケーリング
+には少し荷が重く，20乗以上の冪乗スケーリングを用いると，ある程度の成功が
+期待される．突然変異確率が大きいのは，制約条件が少ないため，初期の探索空
+間では不十分だからだと考える．ただ，あまり大きすぎると遺伝子を破壊してし
+まいランダムサーチになってしまうため，この程度が妥当だと考える．
+\subsubsection*{使用パラメータ}
+\begin{description}
+ \item[密結合問題]集団サイズ500, 32乗の冪乗スケーリング, 突然変異確率
+	    0.1\% 
+ \item[疎結合問題]集団サイズ2000, 32乗の冪乗スケーリング, 突然変異確率
+	    3\%  
+\end{description}
+
+\section*{実験結果}
+以下に上記パラメータで行った実験の結果を示す．表\ref{result}に成功/失敗の
+表を示す．成功した場合はその時の平均の世代数(小数点以下切り捨て)と成功率
+を示している．
+
+\begin{table}[htb]
+ \begin{center}
+  \begin{tabular}[tb]{|c||c|c|} \hline
+   &疎結合問題 &密結合問題\\ \hline
+   N = 30& 100\%, 86世代& 100\%, 12世代\\ \hline
+   N = 60& 70\%, 261世代& 100\%, 29世代\\ \hline
+   N = 90& 50\%, 1196世代& 100\%, 38世代\\ \hline
+   N = 120& 失敗& 100\%, 51世代\\ \hline
+   N = 150& 失敗& 100\%, 63世代\\ \hline
+  \end{tabular}
+  \caption{実行結果}
+  \label{result}
+ \end{center}
+\end{table}
+
+\clearpage
+\subsection*{実験結果：最終世代の適応度}
+\subsubsection*{密結合問題: 問題サイズ30}
+全てのシード値で成功した．最終世代の適応度の最大値は1.0で，最大値の平均
+値は1.0，標準偏差は0となった．図\ref{max30d}はシード値509の場合である．
+\subsubsection*{密結合問題: 問題サイズ60}
+全てのシード値で成功した．最終世代の適応度の最大値は1.0で，最大値の平均
+値は1.0，標準偏差は0となった．図\ref{max60d}はシード値509の場合である．
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 457 280]{pic/max30d.jpg}
+  \end{center}
+  \caption{GAによる進化の過程(密結合問題30)(成功)}
+  \label{max30d}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 451 272]{pic/max60d.jpg}
+  \end{center}
+  \caption{GAによる進化の過程(密結合問題60)(成功)}
+  \label{max60d}
+ \end{minipage}
+\end{figure}
+
+\subsubsection*{密結合問題: 問題サイズ90}
+全てのシード値で成功した．最終世代の適応度の最大値は1.0で，最大値の平均
+値は1.0，標準偏差は0となった．図\ref{max90d}はシード値509の場合である．
+\subsubsection*{密結合問題: 問題サイズ120}
+全てのシード値で成功した．最終世代の適応度の最大値は1.0で，最大値の平均
+値は1.0，標準偏差は0となった．図\ref{max120d}はシード値509の場合である．
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 456 279]{pic/max90d.jpg}
+  \end{center}
+  \caption{GAによる進化の過程(密結合問題90)(成功)}
+  \label{max90d}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 460 279]{pic/max120d.jpg}
+  \end{center}
+  \caption{GAによる進化の過程(密結合問題120)(成功)}
+  \label{max120d}
+ \end{minipage}
+\end{figure}
+
+\subsubsection*{密結合問題: 問題サイズ150}
+全てのシード値で成功した．最終世代の適応度の最大値は1.0で，最大値の平均
+値は1.0，標準偏差は0となった．図\ref{max150d}はシード値509の場合である．
+\subsubsection*{疎結合問題: 問題サイズ30}
+全てのシード値で成功した．最終世代の適応度の最大値は1.0で，最大値の平均
+値は1.0，標準偏差は0となった．図\ref{max30s}はシード値509の場合である．
+
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 454 281]{pic/max150d.jpg}
+  \end{center}
+  \caption{GAによる進化の過程(密結合問題150)(成功)}
+  \label{max150d}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 452 278]{pic/max30s.jpg}
+  \end{center}
+  \caption{GAによる進化の過程(疎結合問題30)(成功)}
+  \label{max30s}
+ \end{minipage}
+\end{figure}
+
+\subsubsection*{疎結合問題: 問題サイズ60}
+シード値\{521, 541, 547, 557, 569, 571, 577\}の計7回成功した．最終世代の適応度の最大値は1.0で，最大値の平均
+値は0.986667，標準偏差は0.020518となった．図\ref{max60s}はシード値521の場合である．
+\subsubsection*{疎結合問題: 問題サイズ90}
+シード値\{509, 547, 557, 563, 577\}の計5回成功した．最終世代の適応度の最大値は1.0で，最大値の平均
+値は0.980370，標準偏差は0.020357となった．図\ref{max90s}はシード値509の
+場合である．
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 449 279]{pic/max60s.jpg}
+  \end{center}
+  \caption{GAによる進化の過程(疎結合問題60)(成功)}
+  \label{max60s}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 451 279]{pic/max90s.jpg}
+  \end{center}
+  \caption{GAによる進化の過程(疎結合問題90)(成功)}
+  \label{max90s}
+ \end{minipage}
+\end{figure}
+
+\clearpage
+\subsubsection*{疎結合問題: 問題サイズ120}
+全て失敗した．最終世代の適応度の最大値は0.966667で，最大値の平均値は
+0.941667，標準偏差は0.017830となった．図\ref{max120s}は適応度が最大となったシード値
+557の場合である．
+\subsubsection*{疎結合問題: 問題サイズ150}
+全て失敗した．最終世代の適応度の最大値は0.948889で，最大値の平均値は
+0.928444，標準偏差は0.010968となった．図\ref{max150s}は適応度が最大となったシード値
+547の場合である．
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 456 281]{pic/max120s.jpg}
+  \end{center}
+  \caption{GAによる進化の過程(疎結合問題120)(失敗)}
+  \label{max120s}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=8.7cm, clip, bb=-75 0 453 283]{pic/max150s.jpg}
+  \end{center}
+  \caption{GAによる進化の過程(疎結合問題150)(失敗)}
+  \label{max150s}
+ \end{minipage}
+\end{figure}
+\clearpage
+\subsubsection*{ソースコード}
+以下に作成したソースコードを示す．ただし，必要と思われる部分のみ示してい
+る．
+\begin{lstlisting}[caption=GA.c, label=GA.c, xleftmargin=1cm]
+int main(void){  
+  // seed 509
+  srand(509)
+
+  int SoP = 2000; // size of population 
+  double mutationRate = 0.5; // mutation rate (%)
+  int scaling = 1; // scaling. if 0 then nothing, 1 then linear, 2 then power
+  int d = 1; // for power scaling. pow(x, d)
+
+  int parent[SoP][N+1]; // (parent solution + violation point or fitness) * SoP
+  int children[SoP][N+1]; // (children solution + violation point or fitness) * SoP
+  double fitness[SoP]; // fitness
+  double roulette[SoP]; // roulette for select parents
+  int mask[N]; // mask bit for crossing
+  
+  // start Genetic Algorithm
+  // make initial value(input RED or GREEN or BLUE to parent)
+  for(i=0; i<SoP; i++){
+    for(j=0; j<N; j++){
+      parent[i][j] = 3 * (rand()/(RAND_MAX+1.0));
+    }
+  }
+  
+  // start generation loop
+  for(k=0; k<maxloop; k++){
+
+    // calc violation points, parent[i][N] = violation point
+    for(l=0; l<SoP; l++){
+      violation = 0;
+      for(i=0; i<N; i++){      
+        for(j=0; j<N; j++){
+          if(graph[i][j] == 1 && parent[l][i] == parent[l][j]){
+            violation++;
+          }
+        }
+      }
+      parent[l][N] = violation;
+    }
+    
+    // calc fitness, parent[i][N] = fitness, [0,1]
+    sum = 0;
+    for(i=0; i<SoP; i++){
+      fitness[i] = 1.0 - ((double)parent[i][N] / (double)links);
+      sum += fitness[i];
+    }
+    
+    // scaling
+    // if scaling = 0 then nothing
+    if(scaling == 1){ // then linear scaling
+      sum = 0;
+      for(i=0; i<SoP; i++){
+        fitness[i] = (fitness[i] - minF[k]) / (maxF[k] - minF[k]);
+        sum += fitness[i];
+      }
+    }
+    if(scaling == 2){ // then power scaling
+      sum = 0;
+      for(i=0; i<SoP; i++){
+        fitness[i] = pow(fitness[i], d);
+        sum += fitness[i];
+      }
+    }            
+    
+    // make roulette
+    for(i=0; i<SoP; i++){
+      if(i==0){
+        roulette[i] = fitness[i] / sum;
+      }else{
+        roulette[i] = roulette[i-1] + fitness[i] / sum;
+      }
+    }
+    
+    // end determination
+    if(maxF[k] == 1.0){
+      printf("completed!!  d = %d: %dloop\n", d, k);
+      return 0;
+    }
+
+    // make mask bit for crossing
+    for(i=0; i<N; i++){
+      mask[i] = 2 * (rand()/(RAND_MAX+1.0));
+    }
+    
+    // make children
+    // select parents
+    for(l=0; l<SoP; l++){
+      sp1 = roulette[SoP-1] * (rand()/(RAND_MAX+1.0)); // select parent 1
+      sp2 = roulette[SoP-1] * (rand()/(RAND_MAX+1.0)); // select parent 2
+
+      // find selected parents index in parent[][]
+      for(i=0; i<SoP; i++){
+        if(sp1 <= roulette[i]){
+          sp1 = i;
+          break;
+        }
+      }
+      for(i=0; i<SoP; i++){
+        if(sp2 <= roulette[i]){
+          sp2 = i;
+          break;
+        }
+      }
+
+      // make children by crossing and mutation.
+      // crossing: if mask[j] = 0 then use sp1, if mask[j] = 1 then use sp2
+      for(i=0; i<N; i++){
+        if(mask[i] == 0){
+          children[l][i] = parent[(int)sp1][i];
+        }
+        else{
+          children[l][i] = parent[(int)sp2][i];
+        }
+      }
+
+      // mutation: if mutant then change color (ex) if RED then GREEN or BLUE
+      // first: make 1 or 2 (random) and plus to color
+      // then: RED(0) -> 1 or 2, GREEN(1) -> 2 or 3, BLUE(2) -> 3 or 4
+      // second: % 3 then RED -> 1 or 2, GREEN 2 or 0, BLUE -> 0 or 1
+      for(i=0; i<N; i++){
+        mutation = 100 * (rand()/(RAND_MAX+1.0));
+        if(mutation <= mutationRate){
+          tmp = (2 * (rand()/(RAND_MAX+1.0))) + 1; // tmp = 1 or 2
+          children[l][i] = (int)(children[l][i] + tmp) % 3;
+        }
+      }
+      // end make children
+    }
+    // make next generation
+    for(i=0; i<SoP; i++){
+      for(j=0; j<N; j++){
+        parent[i][j] = children[i][j];
+      }
+    }
+    // end 1 genaration loop
+  }
+  return 0;
+}
+
+\end{lstlisting}
+
+\end{document}

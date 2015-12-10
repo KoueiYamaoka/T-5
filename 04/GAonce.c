@@ -13,6 +13,7 @@ int main(void){
   // seed 509
   srand(509);
   
+<<<<<<< HEAD
   int select = 0; // select size
   int prob = 0; // if 0 then dense, if 1 then sperse
   int SoP = 500; // size of population 
@@ -20,6 +21,16 @@ int main(void){
   int scaling = 2; // scaling. if 0 then nothing, 1 then linear, 2 then power
   int d = 32; // for power scaling. pow(x, d)
   int minv = 0;
+=======
+  int select = 2; // select size
+  int prob = 1; // if 0 then dense, if 1 then sperse
+  int SoP = 500; // size of population 
+  double mutationRate = 3; // mutation rate (%)
+  int scaling = 2; // scaling. if 0 then nothing, 1 then linear, 2 then power
+  int d = 1; // for power scaling. pow(x, d)
+  int linear = 0;
+  int name = 530;
+>>>>>>> d8b0f46b4b0818c561193731d84c98df76fb85be
 
   int count = 0;
   int loops[10];
@@ -290,8 +301,13 @@ int main(void){
   
  OUTPUT:printf(" ");
   
+<<<<<<< HEAD
   // for sparse
   sprintf(filename, "max%dD%d.csv", N, seeds[minv]);
+=======
+    // for sparse
+  sprintf(filename, "fitness%dS%d.csv", N, name);
+>>>>>>> d8b0f46b4b0818c561193731d84c98df76fb85be
   // open file
   if((fp = fopen(filename, "w")) == NULL){
     printf("file open error.\n");
