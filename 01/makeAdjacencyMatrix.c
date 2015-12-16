@@ -9,11 +9,11 @@ int main(void){
   //seed 509
   srand(509);
 
-  const int N[5] = {30, 60, 90, 120, 150};   // number if nodes
+  const int N[6] = {30, 60, 90, 120, 150, 180};   // number if nodes
   int i, j, k; // for for loop
   int red, green;  // color range
 
-  for(k=0; k<5; k++){
+  for(k=0; k<6; k++){
     int SMat[N[k]][N[k]]; // AdjacencyMatrix for sparse
     int DMat[N[k]][N[k]]; // AdjacencyMatrix for dense
     int SLink = 3 * N[k]; // number of links for sparse

@@ -13,17 +13,16 @@ int main(void){
   srand(509);
 
   
-  int select = 3; // select size
+  int select = 4; // select size
   int prob = 1; // if 0 then dense, if 1 then sperse
   int SoP = 500; // size of population 
   double mutationRate = 3; // mutation rate (%)
-  int scaling = 2; // scaling. if 0 then nothing, 1 then linear, 2 then power
+  int scaling = 1; // scaling. if 0 then nothing, 1 then linear, 2 then power
   int d = 1; // for power scaling. pow(x, d)
   int Ne = 20; // use top Ne gene to HC
-  int name = 510;
-  int linear = 272087;
 
-  const int size[5] = {30, 60, 90, 120, 150}; // number of nodes
+
+  const int size[6] = {30, 60, 90, 120, 150, 180}; // number of nodes
   const int N = size[select]; // which to use? NN[0] to NN[4] or something int value
   const int links[2] = {N * (N - 1) / 4 // number of links for dense
 			, 3 * N}; // number of links for sparse
@@ -61,8 +60,7 @@ int main(void){
   int tmp;
   double tmpd;
   int loops = 0;
-  int calcs[10] = {0,0,0,0,0,0,0,0,0,0};
-  int calcsd[50];
+  int calcs[100];
 
   //init
   for(i=0; i<SoP; i++){
@@ -79,6 +77,9 @@ int main(void){
   for(i=0; i<maxloop; i++){
     maxF[i] = 0;
     aveF[i] = 0;
+  }
+  for(i=0;i<100;i++){
+    calcs[i]=0;
   }
   
   // input AdjacencyMatrix
@@ -113,7 +114,9 @@ int main(void){
   // close
   fclose(fp);
 
- loop:srand(509);
+ loop:
+  if(loops%10 == 0)
+    srand(seeds[loops/10]);
 
   
   // start hybrid Genetic Algorithm
@@ -359,7 +362,7 @@ int main(void){
       printf("completed!!  d = %d: %dloop\n", d, k);
       goto next;
     }
-
+printf("%d:max = %f\n", k, maxF[k]);
     //// HC start
     for(l=0; l<Ne; l++){
       for(i=0; i<N; i++){
@@ -489,6 +492,7 @@ int main(void){
       
     }
 
+    
     // end 1 genaration loop
   }
 
@@ -496,7 +500,7 @@ int main(void){
   calcCount = 0;
   goto next;
 
- OUTPUT:printf(" ");
+  /*OUTPUT:printf(" ");
 
   // for sparse
   sprintf(filename, "max%dS.csv", name);
@@ -523,29 +527,40 @@ int main(void){
   
   // close
   fclose(fp);
-  return 0;
+  return 0;*/
   
   // for loop test
  next: puts(" ");
-  calcsd[d] = calcCount;
+  calcs[loops] = calcCount;
   calcCount = 0;
-  d++;
-  printf("%d, ",d);
-  if(d == 51){
+  printf("%d, ",loops);
+  loops++;
+  if(loops == 100){
     int sum = 0;
     int tmp = 0;
     printf("calcs = ");
-    for(i=1;i<=50;i++){
-      if(calcsd[i] != 0){
-	printf("%d:%d, ",i, calcsd[i]);
-	sum += calcsd[i];
+    for(i=0;i<100;i++){
+      if(calcs[i] != 0){
+	printf("%d:%d, ",i, calcs[i]);
+	sum += calcs[i];
 	tmp++;
       }
     }
     puts("");
-    if(sum != 0)
-      printf("ave = %d, %d clear\n",(sum / tmp), tmp);
-    goto OUTPUT;
+    double sig = 0;
+    double ave = sum / tmp;
+    tmp = 0;
+    for(i=0;i<100;i++){
+      if(calcs[i] != 0){
+	sig += (calcs[i] - ave) * (calcs[i] - ave);
+	tmp++;
+      }
+    }
+    sig = sqrt((sig/tmp));
+    if(sum != 0){
+      printf("ave = %f, sig = %f, %d clear\n",ave, sig, tmp);
+      return 0;
+    }
   }
   goto loop;
   

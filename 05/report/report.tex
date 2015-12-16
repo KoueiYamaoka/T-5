@@ -1,0 +1,737 @@
+\documentclass[a4j]{jarticle}
+\title{進化的アルゴリズムレポート \ 課題5}
+\author{情報科学類, 3年, 2クラス, 学籍番号：201311403 \ 山岡 洸瑛, Yamaoka
+Kouei}
+\西暦
+\date{\today}
+
+%余白設定
+\setlength{\topmargin}{20mm}
+\addtolength{\topmargin}{-1in}
+\setlength{\oddsidemargin}{20mm}
+\addtolength{\oddsidemargin}{-1in}
+\setlength{\evensidemargin}{15mm}
+\addtolength{\evensidemargin}{-1in}
+\setlength{\textwidth}{170mm}
+\setlength{\textheight}{235mm}
+\setlength{\headsep}{0mm}
+\setlength{\headheight}{0mm}
+\setlength{\topskip}{0mm}
+
+
+\def\pgfsysdriver{pgfsys-dvipdfmx.def}
+
+\usepackage{ascmac}
+\usepackage{here}
+\usepackage{tikz}
+\usetikzlibrary{trees}
+\usepackage{bm}
+\usepackage{here}
+
+\usepackage{listings,jlisting}
+\renewcommand{\lstlistingname}{リスト}
+\lstset{
+basicstyle=\ttfamily\scriptsize,
+commentstyle=\textit,
+classoffset=1,
+keywordstyle=\bfseries,
+frame=tRBl,
+framesep=5pt,
+showstringspaces=false,
+numbers=left,
+stepnumber=1,
+numberstyle=\tiny,
+tabsize=2
+}
+
+\begin{document}
+\begin{titlepage}
+\maketitle 
+\thispagestyle{empty}
+\end{titlepage}
+\setcounter{tocdepth}{3}
+\tableofcontents
+\newpage
+\section{ハイブリッドGA（HGA）によるグラフ色塗り問題の解決}
+
+\subsection{HGAのアルゴリズム}
+アルゴリズムは示されたものと同様のため省略する．なお．山登り法（HC）の過程で解が得られなかった場合，HCの結果をGAに戻さずに，次の世代に移行している．
+
+\subsubsection{探索回数の計算方法}
+探索回数は違反点数を計算した回数としている．HGAにおいては，GA部で集団サイズ$\times$世代数，HC部で山登りの回数$\times$2，である．
+
+\subsection{実験}
+\subsubsection{実験条件（各種パラメータ）}
+以下に各種パラメータの値を示す．なお，10個の乱数のシード値は\{509, 521, 523, 541,
+547, 557, 563, 569, 571, 577\}とした．1つのみ用いる場合は509とした，
+
+\subsubsection{問題サイズ(ノード数)}
+問題サイズは疎結合，密結合共に60, 90, 120, 150とした．
+
+\subsubsection{世代の上限}
+GAにおいて世代の上限は1000とし，HCにおいて最大繰り返し回数は1000回とした．これは以下の実験により得た十分大きな値であり，これ以下の回数であってもHGAは十分機能する．
+
+\subsubsection{HCで使用する上位個体の数$N_e$}
+HCで使用する上位個体の数$N_e$は20とした．これは，上位$N_e$個の個体に対してHCを行った場合に，何位の個体でHCに成功したかを確認して調整した．ただし，$N_e$があまり大きすぎると，解にたどり着けないにも関わらず計算してしまう可能性がある．上位個体がたどり着けないのであれば，下位個体もたどり着けない，とは言えないが，その確率は小さいと考える．従って無駄を省くため，20個程度とするのが妥当だという結論に至った．
+
+\subsubsection{集団サイズ，スケーリング，突然変異確率の調整}
+集団サイズ，スケーリング，突然変異確率の調整を行う．調整は以下の方法で行う．
+\begin{itemize}
+ \item 問題サイズは120として調整する．
+ \item 集団サイズは500, 1000の2通りを試す．
+ \item スケーリングは線形スケーリングと冪乗スケーリングについて試す．
+ \item 線形スケーリングはシード値を変えながら10回計算し，成功した場合の平均の探索回数
+       を使用する．
+ \item 冪乗スケーリングはシード値509を用いて1乗から50乗まで1度ずつ計算す
+       る．
+ \item スケーリングをしない場合については1乗の冪乗スケーリングにあたるた
+       め，上記でまとめて行う
+ \item 突然変異確率は0.1\%, 0,5\%, 1\%, 3\%の4通りについて行う．
+\end{itemize}
+これらをグラフにまとめ，図\ref{501d}から図\ref{1030s}に示す．以下の図にお
+いて縦軸は成功した場合の探索回数．横軸は冪乗スケーリングのパラメータで，何
+乗かを示している．失敗は探索回数0として示している．\\\ \ \ 
+密結合問題については線形グラフ，疎結合問題については，縦軸をlogスケール
+にしている．そのため，疎結合問題では，探索回数0はグラフに示されていない．
+
+\subsubsection*{密結合問題}
+\begin{figure}[H]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 448 270]{../pic/501d.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率0.1\%}
+  \label{501d}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 451 279]{../pic/1001d.jpg}
+  \end{center}
+  \caption{集団サイズ1000，変異率0.1\%}
+  \label{1001d}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 454 280]{../pic/505d.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率0.5\%}
+  \label{505d}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 448 281]{../pic/1005d.jpg}
+  \end{center}
+  \caption{集団サイズ1000，変異率0.5\%}
+  \label{1005d}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 450 278]{../pic/510d.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率1\%}
+  \label{510d}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 449 279]{../pic/1010d.jpg}
+  \end{center}
+  \caption{集団サイズ1000，変異率1\%}
+  \label{1010d}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 447 279]{../pic/530d.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率3\%}
+  \label{530d}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 449 278]{../pic/1030d.jpg}
+  \end{center}
+  \caption{集団サイズ1000，変異率3\%}
+  \label{1030d}
+ \end{minipage}
+\end{figure}
+
+\subsubsection*{疎結合問題}
+\begin{figure}[H]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 450 278]{../pic/501s.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率0.1\%}
+  \label{501s}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 457 277]{../pic/1001s.jpg}
+  \end{center}
+  \caption{集団サイズ1000，変異率0.1\%}
+  \label{1001s}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 449 280]{../pic/505s.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率0.5\%}
+  \label{505s}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 451 278]{../pic/1005s.jpg}
+  \end{center}
+  \caption{集団サイズ1000，変異率0.5\%}
+  \label{1005s}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 447 276]{../pic/510s.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率1\%}
+  \label{510s}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 453 273]{../pic/1010s.jpg}
+  \end{center}
+  \caption{集団サイズ1000，変異率1\%}
+  \label{1010s}
+ \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 452 279]{../pic/530s.jpg}
+  \end{center}
+  \caption{集団サイズ500, 変異率3\%}
+  \label{530s}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8cm, clip, bb=-75 0 452 284]{../pic/1030s.jpg}
+  \end{center}
+  \caption{集団サイズ1000，変異率3\%}
+  \label{1030s}
+ \end{minipage}
+\end{figure}
+
+
+\subsubsection{集団サイズ，スケーリング，突然変異確率の決定}
+以上より各種パラメータを決定する．まず密結合問題について決定する．図\ref{501d}より，周産サイズ500で十分成功しているため，集団サイズは500とする．スケーリングについては，線形スケーリングが平均的に良いため，線形スケーリングとする．突然変異確率による差はあまり見られないため0.1\%とする．\par
+次に疎結合問題について決定する．集団サイズによる違いはあまり見られないため，500とする．スケーリングについては，べき乗スケーリングが平均的には良いものの，失敗することがあり，かつ平均は線形スケーリングとそれほど変わらないため，こちらも線形スケーリングを採用する．突然変異確率は大きいほうが良くなる傾向にあるので3\%とする．このパラメータは図\ref{530s}の場合である．
+
+\subsubsection{考察}
+グラフの傾向から密結合問題は各種パラメータにそれほど依存していないように見える．これはGAにあまり頼っていないからだと考えられる．密結合問題ではHCで十分解決できるため，1世代目のGAのHCで成功することが多く，GAのパラメータの影響が少ないのである．\par
+対して疎結合問題はパラメータの影響を少なからず受けている．特に突然変異確率の影響は大きい．突然変異確率が大きくなると目に見えて成功することが多くなっている．これはべき乗スケーリングの途切れが少なくなっていることから読み取れる．ただし，集団サイズは図\ref{505s}を除きあまり影響していない．疎結合問題ではHCによって簡単に解けるわけではないので，GAに大きく依存している．そのためGAの時と同様に，突然変異確率を大きくすると成功率は高くなる．ただしあまり大きすぎるとランダムサーチになってしまうため，調度良い値にしなければならない．また，最終的に解を見つけているのはHCであり，HCは上位個体に対して行っているため，集団サイズはあまり関係がないのだと考えられる．
+
+\subsection{考察：HCで得た解をGAに戻さない理由について}
+今回作成したHGAでは，上位20個の個体に対しHCを計算している．計算した結果，解が得られなかった場合，HCで計算した結果をGAに戻さずに計算している．これはより良い結果を得るためである．より良い結果が得られるであろう理由について考察する．\par
+GAの計算を擬似的に2次元空間に表したものが図\ref{num1}である．黒丸がある1個体を表している．これらの個体に対し遺伝的演算を行うことで図\ref{num2}のようになり，GAは進行していく．しかし，HCを行うと個体は図\ref{num3}のように，局所最適解付近に集まってしまうことが考えられる．確かに平均値は下がっているが，個体の多様性が失われてしまっている．このようになってしまうと，親の選択時に局所最適解に似た親が選ばれやすくなり，それは大域的最適解への収束を妨げてしまう．このようにHCによって局所最適解に近く，状態が似た個体が増えてしまうことによる多様性の喪失が，性能の劣化を引き起こしてしまう可能性がある．そのためHCで計算した結果をGAに戻さないことによって多様性の喪失を防ぐことで，より良い結果が期待される．
+
+\begin{figure}[hp]
+ \begin{minipage}{0.33\hsize}
+  \begin{center}
+   \includegraphics[width=7cm, clip, bb=0 0 644 436]{../pic/num1.jpg}
+  \end{center}
+  \caption{第n世代目の状態}
+  \label{num1}
+ \end{minipage}
+ \begin{minipage}{0.33\hsize}
+  \begin{center}
+   \includegraphics[width=7cm, clip, bb=0 0 606 449]{../pic/num2.jpg}
+  \end{center}
+  \caption{第n+1世代目の状態}
+  \label{num2}
+ \end{minipage}
+ \begin{minipage}{0.33\hsize}
+  \begin{center}
+   \includegraphics[width=7cm, clip, bb=0 20 605 446]{../pic/num3.jpg}
+  \end{center}
+  \caption{第n世代目でHCが終わった状態}
+  \label{num3}
+ \end{minipage}
+\end{figure}
+
+
+
+\clearpage
+\section{実験5: 各アルゴリズムの比較・考察}
+実験4までで作成した繰り返し山登り法（IHC），進化的戦略（ES），GA，及び実験5において作成したHGAの計4種のアルゴリズムで同じ問題を解き，その性能を比較・考察する．比較・考察は与えられた方法で行う．
+\subsection{探索回数}
+探索回数は与えられたものを使うため省略する．ただし山登り法については一度の反復で2度違反点数を計算しているため，IHCに関しては以下のように変更した．なお，HGAに関してはすでに示してある．
+$$
+IHCの山登り回数 \times 2 \times 繰り返して再スタートした回数
+$$
+
+\subsection{実験条件（各種パラメータ）}
+今までに求めた最適なパラメータを以下にまとめる．IHCは表\ref{maxloopHC},\ref{maxloopIHC}，ESは表\ref{ESpara}，GAは表\ref{GApara}，HGAは表\ref{HGApara}に示した．
+
+\begin{table}[H]
+ \begin{center} 
+  \caption{失敗と判断するまでの繰り返し回数} 
+  \label{maxloopHC}
+  \begin{tabular}[t]{|c|c|c|c|c|} \hline
+   問題サイズ& 60& 90& 120& 150 \\ \hline \hline
+   HCの最大繰り返し回数（疎結合）& 400& 800& 1000& 2000 \\ \hline
+   HCの最大繰り返し回数（密結合）& 300& 400& 600& 800 \\ \hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+\begin{table}[H]
+ \begin{center}
+  \caption{IHCでHCが失敗した場合にリスタートする回数}
+  \label{maxloopIHC}
+  \begin{tabular}[t]{|c|c|c|c|c|} \hline
+   問題サイズ& 60& 90& 120& 150 \\ \hline \hline
+   IHCでリスタートする回数（疎結合）& 50& 100& 500& 500 \\ \hline
+   IHCでリスタートする回数（密結合）& 10& 10& 10& 10\\ \hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+\begin{table}[H]
+ \begin{center}
+  \caption{ESの各種パラメータ}
+  \label{ESpara}
+  \begin{tabular}[t]{|c|c|c|c|} \hline
+世代の上限 & $\mu$ & $\lambda$ & 次世代の選択方法 \\\hline
+1000 & 200 & 1100 & （$\mu + \lambda$）-ES \\\hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+\begin{table}[H]
+ \begin{center}
+  \caption{GAの各種パラメータ}
+  \label{GApara}
+  \begin{tabular}[t]{|c|c|c|c|c|} \hline
+   & 世代の上限&集団サイズ& スケーリング& 突然変異確率 \\ \hline \hline
+   疎結合& 1000&2000& 32乗のべき乗スケーリング& 3\% \\ \hline
+   密結合& 1000&500& 32乗のべき乗スケーリング& 0.1\%\\ \hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+\begin{table}[H]
+ \begin{center}
+  \caption{HGAの各種パラメータ}
+  \label{HGApara}
+  \begin{tabular}[t]{|c|c|c|c|c|c|c|} \hline
+   & 世代の上限&集団サイズ& スケーリング& 突然変異確率 &HCで用いる上位個体の数& HCの山登り回数\\ \hline \hline
+   疎結合& 1000&500& 線形スケーリング& 3\% & 20個体& 1000回\\ \hline
+   密結合& 1000&500& 線形スケーリング& 0.1\%& 20個体& 1000回\\ \hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+\subsection{実験結果}
+表\ref{resultS}，\ref{resultD}に実験結果を示す．表には，乱数の初期値を変えて10回実験した時の解を発見できた回数と，解を発見できるまでにかかった探索回数の平均を示している．
+\begin{table}[H]
+ \begin{center}
+  \caption{密結合問題の実験結果}
+  \label{resultD}
+  \begin{tabular}[t]{|c|c|c|c|c|c|c|c|c|}\hline
+   密結合問題 & \multicolumn{2}{|c|}{IHC} & \multicolumn{2}{|c|}{ES} & \multicolumn{2}{|c|}{GA} & \multicolumn{2}{|c|}{HGA} \\\hline
+問題サイズ & 探索回数 & 成功回数 & 探索回数 & 成功回数 & 探索回数 & 成功回数 & 探索回数 & 成功回数 \\\hline\hline
+60 & 380 & 10 & 49920 & 10 & 15050 & 10 & 1346 & 10 \\\hline
+90 & 571 & 10 & 82370 & 10 & 19700 & 10 & 1573 & 10 \\\hline
+120 & 893 & 10 & 118230 & 10 & 26300 & 10 & 1782 & 10 \\\hline
+150 & 1333 & 10 & 147930 & 10 & 32200 & 10 & 2195 & 10 \\\hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+\begin{table}[H]
+ \begin{center}
+  \caption{疎結合問題の実験結果}
+  \label{resultS}
+  \begin{tabular}[t]{|c|c|c|c|c|c|c|c|c|} \hline
+   疎結合問題 & \multicolumn{2}{|c|}{IHC} & \multicolumn{2}{|c|}{ES} & \multicolumn{2}{|c|}{GA} & \multicolumn{2}{|c|}{HGA} \\ \hline
+問題サイズ & 探索回数 & 成功回数 & 探索回数 & 成功回数 & 探索回数 & 成功回数 & 探索回数 & 成功回数 \\ \hline \hline
+60 & 7245 & 10 & 43650 & 2 & 524000 & 7 & 10475 & 10 \\\hline
+90 & 36744 & 10 & 178400 & 2 & 789600 & 5 & 54581 & 10 \\\hline
+120 & 193124 & 10 & 143200 & 1 & 0 & 0 & 271087 & 10 \\\hline
+150 & 684213 & 10 & 0 & 0 & 0 & 0 & 614832 & 10 \\\hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+\subsection{比較・考察}
+アルゴリズムによって探索性能に違いが出る理由について考察する．
+\subsubsection{密結合問題}
+まず密結合問題について考察する．表\ref{resultD}から読み取れる通り，全てのアルゴリズムで10回とも解けている．しかし探索回数は大きく異なっており，IHCとHGAは小さいが，ESとGAは非常に大きくなっている．
+\subsubsection*{IHC}
+IHCの探索回数は密結合問題であることから非常に少なくなっている．密結合問題の場合，以前の実験よりHCで十分解決することがわかっているため，探索回数は非常に少なくなることは予想通りである．一度の山登りで2回だけ違反点数を計算しているため，600回山を登ったとしても探索回数はたかだか1200回である．HCは局所最適解に収束しがちであるという問題からIHCに拡張したが，密結合問題においては大きな問題にならない．HCの弱点は機能せず，強い部分のみが影響しているため，このような結果になったのだと言える．
+\subsubsection*{HGA}
+また，密結合問題はHCで解決できることから，HGAの探索回数も説明できる．GAの第1世代のHCにより解を発見しているのである．これは実際に解を発見した状況を出力させることで確認している．GAの第1世代のHCで解を発見した場合，GA部で違反点数は初期値に対して1回，遺伝的演算の後に1回計算しており，その後HC部で山登り回数$\times 2$回計算している．従ってHGAの探索回数は，IHCの探索回数に集団サイズ$\times 2$を足したものとなる．集団サイズは500であるから，表\ref{resultD}のIHCの探索回数に1000を足すとHGAの探索回数に近くなるはずであり，実際に確認できる．
+\subsubsection*{ES}
+次にESについて考察する．ESの計算回数が多くなってしまっているのはパラメータによるものであると考えら得れる．ESのパラメータは計算時間を考慮せず，密結合問題及び疎結合問題両方を可能な限り解けるように調整したものである．そのため$\lambda$の値が大きくなっている．密結合問題においては$\lambda$が50程度であっても解けることを確認しているが，疎結合問題に合わせてしまったため$\lambda$が過剰に大きく，そのため計算回数が多くなってしまっている．問題サイズ150においては，$\lambda$が1100の場合も50の場合も世代は150世代程度で解が得られている．この時の探索回数の差は$\lambda （1100, 50） \times $世代数（150） $= 165000, 7500$と大きく開いてしまう．このままでは比較ができないため，最適なパラメータを変更し，$\mu = 10, \lambda = 50$として計算した場合の探索回数を表\ref{resultES}に示す．解は10回とも発見できている．\par
+これでより良い結果が得られた．しかしそれでもIHCやHGAに比べて探索回数が多くなってしまっている．これはESの性質が原因であると考えられる．ESは大域的最適解を見つけるための手法であり，そのため遺伝的操作により世代内の多様性を保持している．その代わりに収束は遅くなってしまい，結果探索回数が増えてしまっているのだと言える．
+\begin{table}[H]
+ \begin{center}
+  \caption{再調整後のESの探索回数}
+  \label{resultES}
+  \begin{tabular}[t]{|c|c|c|c|c|} \hline
+問題サイズ & 60 & 90 & 120 & 150 \\ \hline
+探索回数 & 3500 & 5575 & 7300 & 9650 \\  \hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+\subsubsection*{GA}
+GAもESと同様に探索回数が多くなってしまっている．またその理由もESと同様で，大域的最適解を見つけるため，多様性を保持しており，代わりに収束が遅くなっていることが原因であると考えられる．\\ \par
+以上より，密結合問題の解決には問題サイズ60,90,120,150全てについてIHCを使用するのが適していると言える．これは成功率が高いだけでなく，探索回数も少ないからである．
+
+\subsubsection{疎結合問題}
+続いて疎結合問題について考察する．表\ref{resultS}よりIHCとHGAについては全て解けているが，ESとGAでは問題サイズが大きくなると解けなくなっている．
+\subsubsection*{IHC}
+IHCにおいては解けているものの探索回数が非常に多くなっている．特に問題サイズ150の時はIHCによる初期化を行いながら合計34万回も山を登っていることになる．しかし疎結合問題においては問題の解決が非常に難しく，1度のHCにより解ける確率は非常に小さくなっている．そのためIHCによる初期化を何度も繰り返す結果となり，探索回数の増加につながってしまっている．このように初期値の運に頼っているとはいえ，他の手法よりも計算回数が少ないため，グラフ色塗り問題に関しては良い手法であると言える．
+
+\subsubsection*{HGA}
+HGAにおいてもIHC同様に全て解けているが，探索回数が非常に多くなっている．また，問題サイズが150になると，探索回数がIHCと逆転し，HGAの方が少なくなっている．これはGAの遺伝的演算により保持された解の多様性により，IHCよりも早く大域的最適解に辿り着いた可能性が考えられる．問題サイズが大きいほど，IHCで運良く大域的最適解を得る可能性が小さくなり，探索回数が増え，結果HGAの方が少ない探索回数で解に辿り着いたのではないだろうか．また，探索回数が少ないのは運による部分も大きく，例えば問題サイズ150，シード値541の場合，IHCにおいて探索回数129853回と平均より50万回も少ない回数で解を見つけている．これはHGAにおいても同様で，10回の試行毎の探索回数には大きな差があり，今回の実験では偶然HGAの方が少ない探索回数だったという可能性も高い．
+
+\subsubsection*{ES}
+ESでは探索回数が多いだけでなく，成功回数も少ない．やはり疎結合問題となるとESには荷が重いのだろう．問題サイズ120の時に1回だけ解けているが，探索回数が問題サイズ90の時よりも少ないと，説明しにくい結果になっている．これはやはり偶然よい初期値を得たことなど，運によるものであると考えられる．ESは偶然の要素を取り入れたアルゴリズムであるため，このように解に至ることができた，ということはESが成功したと言えるが，成功回数が少ないため，グラフ色塗り問題には適していない．
+
+\subsubsection*{GA}
+ESと同様に探索回数は多く，成功回数は少ない．しかしESよりは多く解けているため，GAの方がグラフ色塗り問題には適していると言える．しかしIHC，HGAと比べると，その差は明らかであり，GAもES同様適していない．GAの特徴に，ある程度良い値への収束は早いが，解にたどり着くには時間がかかる，というものがある．解にたどり着くのに時間がかかった結果，成功回数が少なく，探索回数は多くなってしまっている．この問題を緩和するためにHCを使用したHGAは，GAを単体で用いた場合に比べて2倍を遥かに超える結果を示しており，$1+1$が2以上になる良い例である．
+
+\subsubsection*{IHCかHGAか}
+以上より，IHC，HGAが良いという結論を得た．それではどちらのほうがより適していると言えるかを考察する．まず，探索回数だけを見ると，問題サイズ150以外はIHC，問題サイズ150はHGAである．しかし，探索回数に運の要素が多大に影響していることを考慮すると，単純に探索回数で比較することもできない．そのため，探索回数の標準偏差を計算した．標準偏差は探索回数が大きくなるに連れて大きくなるため，標準偏差を平均値で割った変動係数についても計算し比較する．これらを表\ref{ave10}にまとめた．なお，標準偏差は小数点以下を切り捨てている．
+ \begin{table}[H]
+  \begin{center}
+   \caption{IHC,HGAそれぞれを10回ずつ行った場合の探索回数の平均，標準偏差，変動係数}
+   \label{ave10}
+   \begin{tabular}[t]{|c||c|c|c|c|c|c|} \hline
+     & \multicolumn{3}{|c|}{IHC} & \multicolumn{3}{|c|}{HGA}  \\\hline
+問題サイズ & 探索回数 & 標準偏差 & 変動係数 & 探索回数 & 標準偏差 & 変動係数 \\\hline\hline
+60 & 7245 & 6050 & 0.835058661 & 10475 & 6455 & 0.616229117 \\\hline
+90 & 36744 & 18029 & 0.490665143 & 54581 & 61954 & 1.135083637 \\\hline
+120 & 193124 & 201461 & 1.043169156 & 271087 & 315139 & 1.162501337 \\\hline
+150 & 684213 & 482191 & 0.704738144 & 614832 & 500715 & 0.8143932 \\\hline
+   \end{tabular}
+  \end{center}
+ \end{table}
+表\ref{ave10}をみると，変動係数の値が問題サイズ毎に大きく変動しており，とても信用できる値ではない．これではまだどちらか適しているか判断しかねるため，追加で実験を行う．ここまでは10個のシード値を用いて10回プログラムを実行していた．追加の実験では1つのシード値に対し，10回連続してプログラムを実行する．これを10個のシード値に対して行うことで，計100回試行を行う．行った結果を表\ref{ave100}に示す．
+ \begin{table}[H]
+  \begin{center}
+   \caption{IHC,HGAをそれぞれ100回ずつ行った場合の成功回数，探索回数の平均，標準偏差，変動係数}
+   \label{ave100}
+   \begin{tabular}[t]{|c||c|c|c|c|c|c|c|c|} \hline
+     & \multicolumn{4}{|c|}{IHC} & \multicolumn{4}{|c|}{HGA}  \\\hline
+問題サイズ & 成功回数 & 探索回数 & 標準偏差 & 変動係数 & 成功回数 & 探索回数 & 標準偏差 & 変動係数 \\\hline\hline
+60 & 100 & 6388 & 6341 & 0.992642455 & 100 & 9036 & 7737 & 0.8562417 \\\hline
+90 & 98 & 45746 & 34624 & 0.756874918 & 100 & 49186 & 52314 & 1.063595332 \\\hline
+120 & 95 & 286332 & 219727 & 0.767385413 & 100 & 387668 & 333698 & 0.860782938 \\\hline
+150 & 97 & 483797 & 422119 & 0.872512645 & 100 & 868092 & 801058 & 0.922780074 \\\hline
+   \end{tabular}
+  \end{center}
+ \end{table}
+表\ref{ave100}を見ると，表\ref{ave10}に比べて変動係数が収束している．まだ収束が甘く，問題サイズ90のHGAだけ1を超えているなど,
+まだ信用しきれない部分はあるものの，10回の試行の時よりは信用できる．これらの値を信用すると，標準偏差はIHCの方が小さくなっている．かつ探索回数も少ないので，IHCの方が平均的に計算が早く終了すると言える．しかし，問題サイズ90以降に何回か失敗している．グラフ色塗り問題においては，成功回数が最も重要な要素であるとすると，問題サイズ60はIHC，それ以外はHGAが適していると言える．ただし，数パーセントの確率で失敗することを許容するのであれば全ての問題サイズでIHCを使うのが良いだろう．グラフ色塗り問題に関しては，成功しなければどんなに違反点数が小さくても意味はないと考えるため，本レポートでは成功回数を最も重要な要素とし，各アルゴリズムが8題の内どの問題に適しているかを表\ref{fit}に示す．
+\begin{table}[ht]
+ \begin{center}
+  \caption{8題それぞれについての最適なアルゴリズム}
+  \label{fit}
+  \begin{tabular}[t]{|c|c|c|c|c|} \hline
+   問題サイズ&60 &90 &120 &150 \\ \hline\hline
+   疎結合問題&IHC &HGA &HGA &HGA \\ \hline
+   密結合問題&IHC &IHC &IHC &IHC \\ \hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+\subsection{考察：実験結果について}
+実験により得られた最適なアルゴリズム（表\ref{fit}）について，HGAに着目して考察する．そのためにまず，HGAの元となるGAとHCについて考察する．HCは単純なアルゴリズムで，第nステップ目から第n+1ステップ目には，常に最良な方向に進むため，比較的高速に局所最適解に収束すると言える．対してGAは大域的最適解を求めやすいアルゴリズムであるため，時間はかかるものの大域的最適解に近づいていくことができる．\par
+HGAはこれらの良い部分を合わせたものである．GAにより大域的最適解に近づき，その後はHCにより高速に局所最適解を得ている．世代が若い間は，HCにより得られた解が局所最適解であり，大域的最適解ではないことが多いと予測される．しかし，世代が進むに連れて解の集団は大域的最適解に近づくため，HCにより得た局所最適解$=$大域的最適解となることが期待される．このようにHGAは，GA部により解の多様性を保持，大域的最適解を探し，HC部により解を収束させ,
+局所最適解$=$大域的最適解となる解を得る．その結果，解の初期収束及び解の停滞が共に防がれ，良い性能を示しているのだと考えられる．\par
+以上をふまえて最適なアルゴリズム（表\ref{fit}）について考察する．まず密結合問題においては，制約の多さから局所最適を目指すことで大域的最適解に至りやすい．そのためIHCで十分に解くことができる．従って高速に動作するIHCが適しているのは自然だと言える．次に疎結合問題においては，局所最適解$=$大域的最適解になりにくいため，IHCでは最適解が求めにくくなっている．大域的最適解を求めるための手法であるESやGAはどうかと考えると，初期収束は回避でき，大域的最適解に近づくことはできるが，解が停滞してしまい，最適解を得ることが難しくなっている．しかしHGAはその問題を解決しているため，最適解を得ることができているのだと考えられる．\par
+すなわち，疎結合問題の問題サイズ60程度までは，IHCを用いて局所最適解を求めるだけで大域的最適解にたどり着くことが期待できる．疎結合問題の問題サイズ90以降は，HGAを用いて大域的最適解を目指すことで，解にたどり着くことが期待できる，と言える．
+\subsection{ソースコード}
+今回作成したHGAのソースコードをリスト\ref{HGA.c}に示す．ただし，隣接行列の読み込みなど重要でないと思われる部分や，内容が重複している部分は省略している．
+\begin{lstlisting}[caption=HGA.c, label=HGA.c, xleftmargin=1cm]
+int main(void){  
+  int SoP = 500; // size of population 
+  double mutationRate = 3; // mutation rate (%)
+  int scaling = 1; // scaling. if 0 then nothing, 1 then linear, 2 then power
+  int d = 1; // for power scaling. pow(x, d)
+  int Ne = 20; // use top Ne gene to HC
+
+  const int N = 60;
+  const int links[2] = {N * (N - 1) / 4 // number of links for dense
+                        , 3 * N}; // number of links for sparse
+  const int maxloop = 1000; // the maximum number of iterations for GA
+  const int maxloopH = 1000; // the maximum number of iterations for HC
+  const int seeds[10] = {509, 521, 523, 541, 547, 557, 563, 569, 571, 577}; // seeds
+
+  int graph[N][N];  // AdjacencyMatrix
+  int parent[SoP][N+1]; // (parent solution + violation point or fitness) * SoP
+  int children[SoP][N+1]; // (children solution + violation point or fitness) * SoP
+  int violation = 0; // violation point
+  int calcCount = 0; // The number of calculations
+  double fitness[SoP]; // fitness
+  double roulette[SoP]; // roulette for select parents
+  int mask[N]; // mask bit for crossing
+  double maxF[maxloop]; // max fitness for output
+  double aveF[maxloop]; // ave fitness for output
+  double minF[maxloop]; // min fitness for output
+  double sum = 0; // for maxF, aveF, minF, roulette
+  int topNe[Ne]; // input top Ne gene's index
+  double sp1 = 0; // selected parent 1
+  double sp2 = 0; // selected parent 2
+  double mutation = 0; // mutation probability
+
+  int i, j, k, l, m; // for for loop
+  int tmp;
+  double tmpd;
+
+  //init
+  for(i=0; i<SoP; i++){
+    for(j=0; j<N; j++){
+      parent[i][j] = 0;
+      children[i][j] = 0;
+    }
+    fitness[i] = 0;
+    roulette[i] = 0;
+  }
+  for(i=0; i<N; i++){
+    mask[i] = 0;
+  }
+  for(i=0; i<maxloop; i++){
+    maxF[i] = 0;
+    aveF[i] = 0;
+  }
+  
+  // start hybrid Genetic Algorithm
+  // make initial value(input RED or GREEN or BLUE to parent)
+  for(i=0; i<SoP; i++){
+    for(j=0; j<N; j++){
+      parent[i][j] = 3 * (rand()/(RAND_MAX+1.0));
+    }
+  }
+
+  // init violation, fitness, max, ave, min
+  // calc violation points, parent[i][N] = violation point
+  for(l=0; l<SoP; l++){
+    violation = 0;
+    for(i=0; i<N; i++){      
+      for(j=0; j<N; j++){
+        if(graph[i][j] == 1 && parent[l][i] == parent[l][j]){
+          violation++;
+        }
+      }
+    }
+    parent[l][N] = violation;
+    calcCount++;
+  }
+  
+  // calc fitness, parent[i][N] = fitness, [0,1]
+  sum = 0;
+  for(i=0; i<SoP; i++){
+    fitness[i] = 1.0 - ((double)parent[i][N] / (double)links[prob]);
+    sum += fitness[i];
+  }
+  
+  // input max, ave, min
+  minF[0] = 1;
+  sum = 0;
+  for(i=0; i<SoP; i++){
+    // max
+    if(maxF[0] < fitness[i]){
+      maxF[0] = fitness[i];
+    }
+    // ave
+    sum += fitness[i];
+    // min
+    if(minF[0] > fitness[i]){
+      minF[0] = fitness[i];
+    }
+  }
+  aveF[0] = sum / SoP;
+
+
+  // scaling
+  // if scaling = 0 then nothing
+  if(scaling == 1){ // then linear scaling
+    sum = 0;
+    for(i=0; i<SoP; i++){
+      fitness[i] = (fitness[i] - minF[0]) / (maxF[0] - minF[0]);
+      sum += fitness[i];
+    }
+  }
+  if(scaling == 2){ // then power scaling
+    sum = 0;
+    for(i=0; i<SoP; i++){
+      fitness[i] = pow(fitness[i], d);
+      sum += fitness[i];
+    }
+  }
+
+  // make roulette
+  for(i=0; i<SoP; i++){
+    if(i==0){
+      roulette[i] = fitness[i] / sum;
+    }else{
+      roulette[i] = roulette[i-1] + fitness[i] / sum;
+    }
+  }
+  
+  // end determination
+  if(maxF[0] == 1.0){
+    printf("completed!! in init value\n");
+    return 0;
+  }
+  
+  //// start generation loop
+  for(k=1; k<maxloop; k++){
+    
+    //// Genetic operation
+    // make mask bit for crossing
+    for(i=0; i<N; i++){
+      mask[i] = 2 * (rand()/(RAND_MAX+1.0));
+    }
+    
+    // make children
+    // select parents
+    for(l=0; l<SoP; l++){
+      sp1 = roulette[SoP-1] * (rand()/(RAND_MAX+1.0)); // select parent 1
+      sp2 = roulette[SoP-1] * (rand()/(RAND_MAX+1.0)); // select parent 2
+
+      // find selected parents index in parent[][]
+      for(i=0; i<SoP; i++){
+        if(sp1 <= roulette[i]){
+          sp1 = i;
+          break;
+        }
+      }
+      for(i=0; i<SoP; i++){
+        if(sp2 <= roulette[i]){
+          sp2 = i;
+          break;
+        }
+      }
+
+      // make children by crossing and mutation.
+      // crossing: if mask[j] = 0 then use sp1, if mask[j] = 1 then use sp2
+      for(i=0; i<N; i++){
+        if(mask[i] == 0){
+          children[l][i] = parent[(int)sp1][i];
+        }
+        else{
+          children[l][i] = parent[(int)sp2][i];
+        }
+      }
+
+      // mutation: if mutant then change color (ex) if RED then GREEN or BLUE
+      // first: make 1 or 2 (random) and plus to color
+      // then: RED(0) -> 1 or 2, GREEN(1) -> 2 or 3, BLUE(2) -> 3 or 4
+      // second: % 3 then RED -> 1 or 2, GREEN 2 or 0, BLUE -> 0 or 1
+      for(i=0; i<N; i++){
+        mutation = 100 * (rand()/(RAND_MAX+1.0));
+        if(mutation <= mutationRate){
+          tmp = (2 * (rand()/(RAND_MAX+1.0))) + 1; // tmp = 1 or 2
+          children[l][i] = (int)(children[l][i] + tmp) % 3;
+        }
+      }
+      // end make children
+    }
+
+    // make next generation
+    for(i=0; i<SoP; i++){
+      for(j=0; j<N; j++){
+        parent[i][j] = children[i][j];
+      }
+    }
+
+    //// calc violation
+    // calc violation points, parent[i][N] = violation point (62行目からと同じ為省略)
+
+    // calc fitness, parent[i][N] = fitness, [0,1] (76行目からと同じ為省略)
+
+    // input max, ave, min, and search top Ne gene
+    for(i=0; i<Ne; i++){
+      topNe[i] = 0;
+    }
+    minF[k] = 1;
+    sum = 0;
+    for(i=0; i<SoP; i++){
+      // max
+      if(maxF[k] < fitness[i]){
+        maxF[k] = fitness[i];
+      }
+      // ave
+      sum += fitness[i];
+      // min
+      if(minF[k] > fitness[i]){
+        minF[k] = fitness[i];
+      }
+      // make topNe
+      if(i < Ne){
+        topNe[i] = i;
+      }else{
+        // search min in fitness[topNe[j]]
+        tmpd = fitness[topNe[0]];
+        tmp = 0;
+        for(j=1; j<Ne; j++){
+          if(fitness[topNe[j]] < tmpd){
+            tmpd = fitness[topNe[j]];
+            tmp = j;
+          }
+        }
+        if(fitness[i] > tmpd){
+          topNe[j] = i;
+        }
+      }
+    }
+    aveF[k] = sum / SoP;
+
+    // sort topNe by insertion
+    for(i=1; i<Ne; i++){
+      tmp = topNe[i];
+      for(j=i; j>0 && fitness[topNe[j-1]] < fitness[tmp]; j--){
+        topNe[j] = topNe[j-1];
+      }
+      topNe[j] = tmp;
+    }
+
+    // scaling (101行目からと同じ為省略)
+    
+    // make roulette (118行目からと同じ為省略)
+
+    // end determination (127行目からと同じ為省略)
+
+    //// HC start
+    for(l=0; l<Ne; l++){
+      for(i=0; i<N; i++){
+        solution[i] = children[topNe[l]][i];
+      }
+      // hill climbing start (課題2と同じ為省略)
+    }
+    // end 1 genaration loop
+  }
+  printf("Genetic algorithm failed...\n");
+  return 0;
+}
+\end{lstlisting}
+
+
+
+\end{document}
