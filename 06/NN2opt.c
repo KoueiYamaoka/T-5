@@ -10,6 +10,7 @@ int NNmethod(int *c, float *euc, int num);
 int calcEuc(float x1, float x2, float y1, float y2);
 void swap(int *x, int *y);
 float calcStanDev(int *array, int length, float ave);
+void reverse(int *array, int start, int end);
 
 int main(int argc, char *argv[]){
 
@@ -134,14 +135,25 @@ int main(int argc, char *argv[]){
 	  l4 = calcEuc(X[c2], X[c4], Y[c2], Y[c4]); // length c2, c4
 	  
 	  if(l1 + l2 > l3 + l4){ // if before length > after length then swap
-	    swap(&solutions[i][j+1], &solutions[i][k]);
+	    /*	    int l;
+	    printf("before(%d, %d)\n",j+1, k);
+	    for(l=0; l<cityNum; l++){
+	      printf("%d, ", solutions[i][l]);
+	    }
+	    puts("end");*/
+	    reverse(solutions[i], j+1,  k);
+	    /*	    printf("after(%d, %d)\n",j+1, k);
+	    for(l=0; l<cityNum; l++){
+	      printf("%d, ", solutions[i][l]);
+	    }
+	    puts("end");*/
 	    swap(&c2, &c3);
 	    count++;
 	  }
 	}
       }
       total = count;
-      //      printf("%d: total = %d\n", i, total);
+      printf("%d: total = %d\n", i, total);
       if(count == 0) // if not swaped
 	break;
       if(l == maxloop-1){
@@ -231,4 +243,12 @@ float calcStanDev(int *array, int length, float ave){
   sum /= length; // dispersion
 
   return sqrt(sum);
+}
+
+/* reverse *array from start to end */
+void reverse(int *array, int start, int end){
+  int i;
+  for(i=0; i<(end-start+1)/2; i++){
+    swap(&array[start + i], &array[end - i]);
+  }
 }

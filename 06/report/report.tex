@@ -65,8 +65,35 @@ tabsize=2
  \end{center}
 \end{table}
 
+\subsection*{間違いの修正}
+2optで解を1回走査するたびに改善された回数が3回，7回，3回...などのようにループしてしまう問題を解決した．この問題の原因は，選択したリンク以外の部分も変更されてしまっていたことである．解は道順を示しており有向グラフになっている．そのため2optでノードを交換するだけでは道順が狂ってしまう．これを改善するために，交換するノードとノードを含め，その間を逆順にした．これらについてまとめ，図\ref{miss}に示す．また修正後の実験結果を改めて表\ref{re}に示す．
+
+\begin{figure}[H]
+ \begin{center}
+  \includegraphics[width=20cm, clip, bb=-100 0 814 449]{miss.jpg}
+  \caption{正しい2optのアルゴリズム}
+  \label{miss}
+ \end{center}
+\end{figure}
+
+\begin{table}[H]
+ \begin{center}
+  \caption{実験結果}
+  \label{re}
+  \begin{tabular}[tb]{|c|c|c|c|c|c|c|} \hline
+ & 最大値 & 最小値（最適解） & 平均値 & 標準偏差 & 変動係数 \\ \hline
+eil51 & 478 & 432（426） & 451.9 & 10.6 & 0.0235 \\\hline
+pr76 & 124110 & 109307（108159） & 114470.9 & 3561.6 & 0.0311 \\\hline
+rat99 & 1392 & 1261（1211） & 1322 & 29.9 & 0.0226 \\\hline
+kroA100 & 24958 & 21376（21282） & 22841.4 & 622.7 & 0.0273 \\\hline
+ch130 & 6999 & 6307（6110） & 6643.1 & 158.6 & 0.0239 \\\hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+
 \subsubsection*{ソースコード}
-作成したソースコードをリスト\ref{NN2opt.c}に示す．ただし，tspファイルの読み込みなど重要でないと思われる部分などは省略している．
+作成したソースコードをリスト\ref{NN2opt.c}に示す．ただし，tspファイルの読み込みなど重要でないと思われる部分などは省略している．なお．問題点は修正済みである．
 \begin{lstlisting}[caption=NN2opt.c, label=NN2opt.c, xleftmargin=1cm]
 int main(int argc, char *argv[]){
 
@@ -152,7 +179,7 @@ int main(int argc, char *argv[]){
           l4 = calcEuc(X[c2], X[c4], Y[c2], Y[c4]); // length c2, c4
           
           if(l1 + l2 > l3 + l4){ // if before length > after length then swap
-            swap(&solutions[i][j+1], &solutions[i][k]);
+            reverse(solutions[i], j+1,  k);
             swap(&c2, &c3);
             count++;
           }
@@ -245,6 +272,14 @@ float calcStanDev(int *array, int length, float ave){
   sum /= length; // dispersion
 
   return sqrt(sum);
+}
+
+/* reverse *array from start to end */
+void reverse(int *array, int start, int end){
+  int i;
+  for(i=0; i<(end-start+1)/2; i++){
+    swap(&array[start + i], &array[end - i]);
+  }
 }
 \end{lstlisting}
 
