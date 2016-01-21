@@ -16,7 +16,7 @@ int main(int argc, char *argv[]){
 
   // variable declaration
   int cityNum; // number of citis
-  float x, y, x2, y2; // for tsp file
+  float x, y; // for tsp file
   int i, j, k, l; // for for loop
   int max, min;
   float ave, standardDeviation; // for output
@@ -112,8 +112,9 @@ int main(int argc, char *argv[]){
     // make solution by NN
     solutions[i][0] = i; // start city i
     check[i] = 1;
+    min = i;
     for(j=1; j<cityNum; j++){
-      min = NNmethod(check, eucArray[i], cityNum); // find min EUC_2D
+      min = NNmethod(check, eucArray[min], cityNum); // find min EUC_2D
       check[min] = 1; // check city
       solutions[i][j] = min;
     }
