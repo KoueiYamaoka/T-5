@@ -7,24 +7,24 @@
 #define MAX_CITY 500
 
 int NNmethod(int *c, int *euc, int num);
-int calcEuc(double x1, double x2, double y1, double y2);
+int calcEuc(long double x1, long double x2, long double y1, long double y2);
 void swap(int *x, int *y);
-double calcStanDev(int *array, int length, double ave);
+long double calcStanDev(int *array, int length, long double ave);
 void reverse(int *array, int start, int end);
 
 int main(int argc, char *argv[]){
 
   srand(509);
   const int seeds[10] = {509, 521, 523, 541, 547, 557, 563, 569, 571, 577}; // seeds
-  int sd = 0;
-  int b = 0; // beta select
-
+  int b = 1;
+  int sdc = 0;
+  
   // variable declaration
   int cityNum; // number of citis
   double x, y; // for tsp file
   int i, j, ant, city; // for for loop
-  int max, min, minNum;
-  double ave, sum, standardDeviation; // for output
+  int min, minNum;
+  long double sum; // for output
   int count, loopcount, tmp;
   
   const int maxloop = 1000;
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
   FILE *fp;
   char *fname = tspName[atoi(argv[1])];
   char s[100];
-  double buffx[MAX_CITY], buffy[MAX_CITY];
+  long double buffx[MAX_CITY], buffy[MAX_CITY];
 
   fp = fopen(fname, "r");
   if(fp == NULL){
@@ -74,31 +74,31 @@ int main(int argc, char *argv[]){
   
 
   // input city locaions
-  double X[cityNum], Y[cityNum]; // city locations
+  long double X[cityNum], Y[cityNum]; // city locations
   for(i=0; i<cityNum; i++){
     X[i] = buffx[i];
     Y[i] = buffy[i];
   }
   //// end input tsp file
-  int bc = 0;
-  int sdc = 0;
   int bss[4][10];
   int loops[4][10];
+  long double sd[4][10];
   
   for(i=0;i<4;i++){
     for(j=0;j<10;j++){
       bss[i][j] = 0;
       loops[i][j] = 0;
+      sd[i][j] = 0;
     }
   }
 
-  int tl[5000];
-  for(i=0; i<5000; i++){
+  int tl[10000];
+  for(i=0; i<10000; i++){
     tl[i] = 0;
   }
 
   
- loop:srand(seeds[sd]);
+ loop:srand(seeds[sdc]);
   
   // variable declaration
   m = cityNum;
@@ -106,13 +106,13 @@ int main(int argc, char *argv[]){
   int check[m][cityNum]; // for check to passed city
   int solution[cityNum];
   int solutions[m][cityNum];
-  double tau[cityNum][cityNum]; // pheromone
+  long double tau[cityNum][cityNum]; // pheromone
 
-  double p[m][cityNum]; // selection probability
+  long double p[m][cityNum]; // selection probability
   int tourLength[cityNum];
   int c1, c2; // selected city
   int bs = INT_MAX; // tour length @best solution
-  double ftmp; // double tmp
+  long double ftmp; // long double tmp
 
   // init
   for(i=0; i<cityNum; i++){
@@ -207,8 +207,19 @@ int main(int argc, char *argv[]){
 	  }
 	}
 	for(i=0; i<cityNum; i++){
-	  if(check[ant][i] == 0){
+	  if(check[ant][i] == 0 && tau[c1][i] != 0.0){
 	    ftmp = pow(tau[c1][i], alpha) * pow((1.0 / eucArray[c1][i]), beta[b]) / sum;
+	    if(isnan(ftmp)){
+	      /* printf("tau:%.20Lf\n", tau[c1][i]); */
+	      /* printf("pow:%.20f\n", pow(tau[c1][i], alpha)); */
+	      /* printf("d:%d\n", eucArray[c1][i]); */
+	      /* printf("eta:%.20f\n", (1.0/eucArray[c1][i])); */
+	      /* printf("pow:%.20f\n", pow((1.0 / eucArray[c1][i]), beta[b])); */
+	      /* printf("sum:%.20Lf\n", sum); */
+	      /* printf("ftmp:%.20Lf\n", pow(tau[c1][i], alpha) * pow((1.0 / eucArray[c1][i]), beta[b]) / sum); */
+	      /* return 0; */
+	      ftmp = 1.0 / bs;
+	    }
 	    p[c1][i] = ftmp;
 	    p[i][c1] = ftmp;
 	  }
@@ -266,7 +277,6 @@ int main(int argc, char *argv[]){
 	minNum = i;
       }
     }
-    printf("\n%d\n", bs);
 
     // end decision
     if(bs < min){ // continue 
@@ -279,27 +289,26 @@ int main(int argc, char *argv[]){
 	solution[i] = solutions[minNum][i];
       }
     }
-    tl[loopcount] = bs;
+    tl[loopcount-1] = bs;
     if(count == maxloop){// end
       break;
     }
   }
-  goto output;
-  bss[bc][sdc] = bs;
-  loops[bc][sdc] = loopcount;
+  goto OUTPUT;
+  bss[0][sdc] = bs;
+  loops[0][sdc] = loopcount;
+  printf("seed: %d, bs: %d, %dloops\n", seeds[sdc], bs, loopcount);
+
   sdc++;
   if(sdc == 10){
-    sdc = 0;
-    bc++;
-  }
-  if(bc == 4)
     goto end;
+  }
   goto loop;
 
  end:puts("");
   int sum2;
   int op[2][4];
-  for(i=0;i<4;i++){
+  for(i=0;i<1;i++){
     sum = 0;
     sum2 = 0;
     for(j=0;j<10;j++){
@@ -308,22 +317,44 @@ int main(int argc, char *argv[]){
     }
     op[0][i] = sum / 10;
     op[1][i] = sum2 / 10;
+    sd[0][i] = calcStanDev(bss[i], 10, op[0][i]);
+    sd[1][i] = calcStanDev(loops[i], 10, op[1][i]);
   }
   
   printf("bs:");
-  for(i=0;i<4;i++){
+  for(i=0;i<1;i++){
     printf("%d ", op[0][i]);
   }
   printf("\nlps:");
-  for(i=0;i<4;i++){
+  for(i=0;i<1;i++){
     printf("%d ", op[1][i]);
   }
   puts("");
+  printf("sd:");
+  for(i=0;i<1;i++){
+    printf("%Lf ", sd[0][i]);
+  }
+  printf("\nlps:");
+  for(i=0;i<1;i++){
+    printf("%Lf ", sd[1][i]);
+  }
+  puts("");
 
- output:puts("");
-  // for sparse
+  return 0;
+  
+ OUTPUT:puts("");
+  count=0;
+  while(tl[count] != 0){
+    count++;
+  }
+  int otl[count];
+  for(i=0;i<count;i++){
+    otl[i] = tl[i];
+  }
+
+  
   char filename[100];
-  sprintf(filename, "test.csv");
+  sprintf(filename, "tl%d.csv", seeds[sdc]);
     // open file
     if((fp = fopen(filename, "w")) == NULL){
       printf("file open error.\n");
@@ -331,13 +362,13 @@ int main(int argc, char *argv[]){
     }
     // write
 
-    for(i=0; i<5000; i++){
+    for(i=0; i<count; i++){
       fprintf(fp, "%d, ", i);
     }
-    fprintf(fp, "5000\n");
+    fprintf(fp, "\n");
 
-    for(i=0; i<5000; i++){
-      fprintf(fp, "%d, ", tl[i]);
+    for(i=0; i<count; i++){
+      fprintf(fp, "%d, ", otl[i]);
     }
     fprintf(fp, "\n");
 
@@ -380,7 +411,7 @@ int NNmethod(int *c, int *euc, int num){
   x1, x2, y1, y2: num
   return: EUC_2D
 */
-int calcEuc(double x1, double x2, double y1, double y2){
+int calcEuc(long double x1, long double x2, long double y1, long double y2){
   return (int)(sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2)) + 0.5);
    
 }
@@ -391,9 +422,9 @@ int calcEuc(double x1, double x2, double y1, double y2){
   *y = tmp;
   }*/
 
-double calcStanDev(int *array, int length, double ave){
+long double calcStanDev(int *array, int length, long double ave){
   int i;
-  double sum = 0;
+  long double sum = 0;
   for(i=0; i<length; i++){
     sum += pow(*array - ave, 2);
     if(i<length-1)
