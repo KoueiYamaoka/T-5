@@ -16,7 +16,7 @@ int main(int argc, char *argv[]){
   srand(509);
   const int seeds[10] = {509, 521, 523, 541, 547, 557, 563, 569, 571, 577}; // seeds
   int b = 0;
-  int sdc = 0;
+  int sdc = 6;
   
   // variable declaration
   int cityNum; // number of citis
@@ -104,6 +104,7 @@ int main(int argc, char *argv[]){
   m = cityNum;
   int eucArray[cityNum][cityNum];
   int check[m][cityNum]; // for check to passed city
+  int bsf[cityNum]; // best-so-fat
   int solutions[m][cityNum];
   double tau[cityNum][cityNum]; // pheromone
   double taumax, taumin;
@@ -119,6 +120,7 @@ int main(int argc, char *argv[]){
       tau[i][j] = 0;
     }
     tourLength[i] = 0;
+    bsf[i] = 0;
   }
   for(i=0; i<m; i++){
     for(j=0; j<cityNum; j++){
@@ -148,22 +150,22 @@ int main(int argc, char *argv[]){
   solutions[0][0] = 0; // start city 0
   check[0][0] = 1;
   min = 0;
-  for(j=1; j<cityNum; j++){
+  for(i=1; i<cityNum; i++){
     min = NNmethod(check[0], eucArray[min], cityNum); // find min EUC_2D
     check[0][min] = 1; // check city
-    solutions[0][j] = min;
+    bsf[i] = min;
   }
   
   // clac tour length 
   sum = 0;
   for(i=0; i<cityNum; i++){ // calc link(c1, c2) length
-    c1 = solutions[0][i]; 
-    c2 = solutions[0][(i+1)%cityNum];
+    c1 = bsf[i]; 
+    c2 = bsf[(i+1)%cityNum];
     sum += eucArray[c1][c2];
   }
   bs = sum;
   // set initial pheromone
-  taumax = 1.0 / (sum * rho);
+  taumax = 1.0 / (bs * rho);
   taumin = calcTauMin(taumax, cityNum, pbest);
   for(i=0; i<cityNum; i++){
     for(j=i+1; j<cityNum; j++){
@@ -210,7 +212,7 @@ int main(int argc, char *argv[]){
 	  if(check[ant][i] == 0 && tau[c1][i] != 0.0){
 	    ftmp = pow(tau[c1][i], alpha) * pow((1.0 / eucArray[c1][i]), beta[b]) / sum;
 	    if(isnan(ftmp)){
-	      ftmp = 1.0 / bs;
+	      ftmp = 1.0 / (bs*rho);
 	    }
 	    p[c1][i] = ftmp;
 	    p[i][c1] = ftmp;
@@ -243,23 +245,24 @@ int main(int argc, char *argv[]){
 
     // search iteration beat
     ibs = INT_MAX;
-    for(i=0; i<cityNum; i++){
+    for(i=0; i<m; i++){
       if(ibs > tourLength[i]){
 	ibs = tourLength[i];
 	minNum = i;
-      }          
+      }
     }
-
+    
     // end decision
     if(bs <= ibs){ // continue 
       count++;
     }
     else{ // reset count and update best solution, taumax, and taumin, 
-      printf("update: %d -> %d\n", bs, ibs);
+      //      printf("update: %d -> %d @%dloops\n", bs, ibs, loopcount);
       bs = ibs;
       count = 0;
-      taumax = 1.0 / (rho * bs);
-      taumin = calcTauMin(taumax, cityNum, pbest);
+      for(i=0; i<cityNum; i++){ 
+	bsf[i] = solutions[minNum][i]; // update best-so-far
+      }
     }
     tl[loopcount-1] = bs;
     if(count == maxloop){// end
@@ -267,6 +270,8 @@ int main(int argc, char *argv[]){
     }
     
     // update pheromone
+    taumax = 1.0 / (rho * ibs);
+    taumin = calcTauMin(taumax, cityNum, pbest);
     // evaporation
     for(i=0; i<m; i++){
       for(j=0; j<cityNum; j++){
@@ -301,7 +306,10 @@ int main(int argc, char *argv[]){
   loops[0][sdc] = loopcount;
   printf("seed: %d, bs: %d, %dloops\n", seeds[sdc], bs, loopcount);
 
+  goto OUTPUT;
+
   sdc++;
+  
   if(sdc == 10){
     goto end;
   }
