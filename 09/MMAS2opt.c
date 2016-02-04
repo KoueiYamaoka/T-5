@@ -8,15 +8,18 @@
 
 int NNmethod(int *c, int *euc, int num);
 int calcEuc(double x1, double x2, double y1, double y2);
-double calcStanDev(int *array, int length, double ave);
 double calcTauMin(double taumax, int n, double p);
+void swap(int *x, int *y);
+void reverse(int *array, int start, int end);
 
 int main(int argc, char *argv[]){
 
-  srand(509);
-  const int seeds[10] = {509, 521, 523, 541, 547, 557, 563, 569, 571, 577}; // seeds
-  int b = 0;
-  int sdc = 6;
+  const int maxloop = 200;
+  const double rhos[6] = {0.01, 0.02, 0.1, 0.2, 0.5, 0.8};
+  const double pbests[6] = {0.001, 0.005, 0.01, 0.05, 0.1, 0.5};
+  const int seeds[10] = {509, 521, 523, 541, 547, 557, 563, 569, 571, 577};
+  int sdc = 0;
+  srand(seeds[sdc]);
   
   // variable declaration
   int cityNum; // number of citis
@@ -24,16 +27,14 @@ int main(int argc, char *argv[]){
   int i, j, ant, city; // for for loop
   int min, minNum;
   double sum; // for output
-  int count, loopcount, tmp;
+  int count, change, loopcount, tmp;
   
-  const int maxloop = 1000;
-
   // variable declaration for Ant System
   int alpha = 1;
-  int beta[4] = {2, 3, 4, 5};
-  int m; // m = cityNum
-  double rho = 0.02;
-  double pbest = 0.05;
+  int beta = 2;
+  int m = 25; // m = cityNum
+  int rho = 4;
+  int pbest = 2;
 
   // usage
   if(argc == 1 || strcmp(argv[1], "-help") == 0){
@@ -64,14 +65,13 @@ int main(int argc, char *argv[]){
   i = 0;
   int ret;
   while((ret = fscanf(fp, "%d%lf%lf", &cityNum, &x, &y)) != EOF){
-    if(ret == 0 || i==5)
+    if(ret == 0)
       break;
     buffx[i] = x;
     buffy[i] = y;
     i++;
   }
-  fclose(fp);
-  
+  fclose(fp);  
 
   // input city locaions
   double X[cityNum], Y[cityNum]; // city locations
@@ -80,37 +80,19 @@ int main(int argc, char *argv[]){
     Y[i] = buffy[i];
   }
   //// end input tsp file
-  int bss[4][10];
-  int loops[4][10];
-  double sd[4][10];
-  
-  for(i=0;i<4;i++){
-    for(j=0;j<10;j++){
-      bss[i][j] = 0;
-      loops[i][j] = 0;
-      sd[i][j] = 0;
-    }
-  }
-
-  int tl[10000];
-  for(i=0; i<10000; i++){
-    tl[i] = 0;
-  }
-
-  
- loop:srand(seeds[sdc]);
   
   // variable declaration
-  m = cityNum;
   int eucArray[cityNum][cityNum];
   int check[m][cityNum]; // for check to passed city
-  int bsf[cityNum]; // best-so-fat
+  int bsf[cityNum]; // best-so-far
   int solutions[m][cityNum];
   double tau[cityNum][cityNum]; // pheromone
   double taumax, taumin;
-  double p[m][cityNum]; // selection probability
-  int tourLength[cityNum];
+  double p[cityNum][cityNum]; // selection probability
+  int tourLength[m];
+  int tourLengthTransition[maxloop * 10];
   int c1, c2; // selected city
+  int c3, c4, l1, l2, l3, l4; // for 2opt
   int bs, ibs; // tour length @best solution, @iteration
   double ftmp; // double tmp
 
@@ -118,18 +100,20 @@ int main(int argc, char *argv[]){
   for(i=0; i<cityNum; i++){
     for(j=0; j<cityNum; j++){
       tau[i][j] = 0;
+      p[i][j] = 0;
     }
-    tourLength[i] = 0;
     bsf[i] = 0;
   }
   for(i=0; i<m; i++){
     for(j=0; j<cityNum; j++){
       solutions[i][j] = 0;
-      p[i][j] = 0;
       check[i][j] = 0;
     }
+    tourLength[i] = 0;
   }
-  
+  for(i=0; i<maxloop*10; i++){
+    tourLengthTransition[i] = 0;
+  }
 
   // calc EUC_2D
   // init diagonal 
@@ -161,12 +145,12 @@ int main(int argc, char *argv[]){
   for(i=0; i<cityNum; i++){ // calc link(c1, c2) length
     c1 = bsf[i]; 
     c2 = bsf[(i+1)%cityNum];
-    sum += eucArray[c1][c2];
+    bs += eucArray[c1][c2];
   }
-  bs = sum;
+
   // set initial pheromone
-  taumax = 1.0 / (bs * rho);
-  taumin = calcTauMin(taumax, cityNum, pbest);
+  taumax = 1.0 / (bs * rhos[rho]);
+  taumin = calcTauMin(taumax, cityNum, pbests[pbest]);
   for(i=0; i<cityNum; i++){
     for(j=i+1; j<cityNum; j++){
       tau[i][j] = taumax;
@@ -179,13 +163,16 @@ int main(int argc, char *argv[]){
   count = 0;
   loopcount = 0;
   while(1){
+    tourLengthTransition[loopcount] = bs;
     loopcount++;
-    for(i=0; i<m; i++){
+    // init
+    for(i=0; i<m; i++){ 
       for(j=0; j<cityNum; j++){
 	check[i][j] = 0;
       }
       tourLength[i] = 0;
     }
+
     // loop for ant
     for(ant=0; ant<m; ant++){
       c1 = cityNum * (rand()/(RAND_MAX+1.0)); // select first city
@@ -196,7 +183,7 @@ int main(int argc, char *argv[]){
       for(city=1; city<cityNum; city++){
 	// init
 	sum = 0;
-	for(i=0; i<m; i++){
+	for(i=0; i<cityNum; i++){
 	  for(j=0; j<cityNum; j++){
 	    p[i][j] = 0;
 	  }
@@ -205,12 +192,12 @@ int main(int argc, char *argv[]){
 	// calc selection probability ( p[][] )
 	for(i=0; i<cityNum; i++){ // calc denominator
 	  if(check[ant][i] == 0){
-	    sum += pow(tau[c1][i], alpha) * pow((1.0 / eucArray[c1][i]), beta[b]);
+	    sum += pow(tau[c1][i], alpha) * pow((1.0 / eucArray[c1][i]), beta);
 	  }
 	}
 	for(i=0; i<cityNum; i++){
 	  if(check[ant][i] == 0 && tau[c1][i] != 0.0){
-	    ftmp = pow(tau[c1][i], alpha) * pow((1.0 / eucArray[c1][i]), beta[b]) / sum;
+	    ftmp = pow(tau[c1][i], alpha) * pow((1.0 / eucArray[c1][i]), beta) / sum;
 	    if(isnan(ftmp)){
 	      ftmp = 1.0 / (bs*rho);
 	    }
@@ -231,7 +218,6 @@ int main(int argc, char *argv[]){
 	    c2 = i; // now c2 = the city next to c1
 	    check[ant][c2] = 1; // check
 	    solutions[ant][city] = c2; // input solution
-	    tourLength[ant] += eucArray[c1][c2]; // add length(c1, c2);
 	    c1 = c2;
 	    break;
 	  }
@@ -239,10 +225,46 @@ int main(int argc, char *argv[]){
 	}
       }
       // end loop for make tour
-      tourLength[ant] += eucArray[solutions[ant][0]][solutions[ant][cityNum-1]];
+      
+      // start 2opt
+      while(1){
+	change = 0;
+	for(i=0; i<cityNum-2; i++){ // link 1 = (c1, c2)
+	  c1 = solutions[ant][i];
+	  c2 = solutions[ant][i+1];
+	  for(j=i+2; j<cityNum; j++){ // link 2 = (c3, c4)
+	    c3 = solutions[ant][j];
+	    c4 = solutions[ant][(j+1)%cityNum]; // if k = (cityNum - 1) then k+1 means 0 (= cityNum % cityNum)
+	    
+	    l1 = calcEuc(X[c1], X[c2], Y[c1], Y[c2]); // length c1, c2
+	    l2 = calcEuc(X[c3], X[c4], Y[c3], Y[c4]); // length c3, c4
+	    l3 = calcEuc(X[c1], X[c3], Y[c1], Y[c3]); // length c1, c3
+	    l4 = calcEuc(X[c2], X[c4], Y[c2], Y[c4]); // length c2, c4
+	    
+	    if(l1 + l2 > l3 + l4){ // if before length > after length then swap
+	      reverse(solutions[ant], i+1,  j);
+	      swap(&c2, &c3);
+	      change++;
+	    }
+	  }
+	}
+	if(change == 0) // if did not swap
+	  break;
+      }
+      // end 2opt
+      
+      // calc tour length
+      sum = 0;
+      for(i=0; i<cityNum; i++){ // calc link(c1, c2) length
+	c1 = solutions[ant][i]; 
+	c2 = solutions[ant][(i+1)%cityNum];
+	sum += eucArray[c1][c2];
+      }
+      tourLength[ant] = sum;
+      // goto next ant
     }
     // end loop for ant
-
+    
     // search iteration beat
     ibs = INT_MAX;
     for(i=0; i<m; i++){
@@ -257,25 +279,23 @@ int main(int argc, char *argv[]){
       count++;
     }
     else{ // reset count and update best solution, taumax, and taumin, 
-      //      printf("update: %d -> %d @%dloops\n", bs, ibs, loopcount);
       bs = ibs;
       count = 0;
       for(i=0; i<cityNum; i++){ 
 	bsf[i] = solutions[minNum][i]; // update best-so-far
       }
     }
-    tl[loopcount-1] = bs;
     if(count == maxloop){// end
       break;
     }
     
     // update pheromone
-    taumax = 1.0 / (rho * ibs);
-    taumin = calcTauMin(taumax, cityNum, pbest);
+    taumax = 1.0 / (rhos[rho] * ibs);
+    taumin = calcTauMin(taumax, cityNum, pbests[pbest]);
     // evaporation
-    for(i=0; i<m; i++){
+    for(i=0; i<cityNum; i++){
       for(j=0; j<cityNum; j++){
-	tau[i][j] *= (1.0 - rho);
+	tau[i][j] *= (1.0 - rhos[rho]);
       }
     }
     // add pheromone
@@ -301,101 +321,24 @@ int main(int argc, char *argv[]){
     }
     // end update pheromone
   }
-
-  bss[0][sdc] = bs;
-  loops[0][sdc] = loopcount;
-  printf("seed: %d, bs: %d, %dloops\n", seeds[sdc], bs, loopcount);
-
-  goto OUTPUT;
-
-  sdc++;
+  tourLengthTransition[loopcount] = bs;
+  // end MMAS + 2opt
   
-  if(sdc == 10){
-    goto end;
-  }
-  goto loop;
-
- end:puts("");
-  int sum2;
-  int op[2][4];
-  for(i=0;i<1;i++){
-    sum = 0;
-    sum2 = 0;
-    for(j=0;j<10;j++){
-      sum += bss[i][j];
-      sum2 += loops[i][j];
-    }
-    op[0][i] = sum / 10;
-    op[1][i] = sum2 / 10;
-    sd[0][i] = calcStanDev(bss[i], 10, op[0][i]);
-    sd[1][i] = calcStanDev(loops[i], 10, op[1][i]);
-  }
-  
-  printf("bs:");
-  for(i=0;i<1;i++){
-    printf("%d ", op[0][i]);
-  }
-  printf("\nlps:");
-  for(i=0;i<1;i++){
-    printf("%d ", op[1][i]);
-  }
-  puts("");
-  printf("sd:");
-  for(i=0;i<1;i++){
-    printf("%f ", sd[0][i]);
-  }
-  printf("\nlps:");
-  for(i=0;i<1;i++){
-    printf("%f ", sd[1][i]);
+  // output and end
+  printf("seed: %d, bs: %d, %dloops\nsolution: ", seeds[sdc], bs, loopcount);
+  for(i=0; i<cityNum; i++){
+    printf("%d", bsf[i]);
+    if(i == cityNum-1)
+      break;
+    printf(", ");
   }
   puts("");
 
-  return 0;
-  
- OUTPUT:puts("");
-  count=0;
-  while(tl[count] != 0){
-    count++;
-  }
-  int otl[count];
-  for(i=0;i<count;i++){
-    otl[i] = tl[i];
-  }
-
-  
-  char filename[100];
-  sprintf(filename, "tl%d.csv", seeds[sdc]);
-    // open file
-    if((fp = fopen(filename, "w")) == NULL){
-      printf("file open error.\n");
-      exit(EXIT_FAILURE);
-    }
-    // write
-
-    for(i=0; i<count; i++){
-      fprintf(fp, "%d, ", i);
-    }
-    fprintf(fp, "\n");
-
-    for(i=0; i<count; i++){
-      fprintf(fp, "%d, ", otl[i]);
-    }
-    fprintf(fp, "\n");
-
-
-    // close
-    fclose(fp);
-    
-
-
-  
   return 0;
 }
 
-
-
 /* 
- *c; checkArray
+ *c: checkArray
  *euc: eucArray[i]
  num: cityNum
  return: index of min EUC_2D
@@ -416,9 +359,9 @@ int NNmethod(int *c, int *euc, int num){
   return minNum;
 }
 
-
-/*
-  x1, x2, y1, y2: num
+/* 
+  Calculate the Euclidean distance
+  x1, x2, y1, y2: Coordinate. A(x1, y1), B(x2, y2)
   return: EUC_2D
 */
 int calcEuc(double x1, double x2, double y1, double y2){
@@ -426,20 +369,28 @@ int calcEuc(double x1, double x2, double y1, double y2){
    
 }
 
-double calcStanDev(int *array, int length, double ave){
-  int i;
-  double sum = 0;
-  for(i=0; i<length; i++){
-    sum += pow(*array - ave, 2);
-    if(i<length-1)
-      ++array;
-  }
-  sum /= length; // dispersion
-
-  return sqrt(sum);
-}
-
+/*
+  Calculate taumin
+  n: cityNum
+  p: pbest
+  return: taumin
+ */
 double calcTauMin(double taumax, int n, double p){
   double tmp = pow(p, (1.0 / n));
   return ((1.0 - tmp) * taumax) / ((n/2.0 - 1.0) * tmp);
+}
+
+/* swap x, y */
+void swap(int *x, int *y){
+  int tmp = *x;
+  *x = *y;
+  *y = tmp;
+}
+
+/* reverse *array from start to end */
+void reverse(int *array, int start, int end){
+  int i;
+  for(i=0; i<(end-start+1)/2; i++){
+    swap(&array[start + i], &array[end - i]);      
+  }
 }

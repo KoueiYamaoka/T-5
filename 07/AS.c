@@ -306,39 +306,16 @@ int main(int argc, char *argv[]){
   goto loop;
 
  end:puts("");
-  int sum2;
-  int op[2][4];
-  for(i=0;i<1;i++){
-    sum = 0;
-    sum2 = 0;
-    for(j=0;j<10;j++){
-      sum += bss[i][j];
-      sum2 += loops[i][j];
-    }
-    op[0][i] = sum / 10;
-    op[1][i] = sum2 / 10;
-    sd[0][i] = calcStanDev(bss[i], 10, op[0][i]);
-    sd[1][i] = calcStanDev(loops[i], 10, op[1][i]);
+  double outtl[2] = {0,0};
+  double outlp[2] = {0,0};
+  for(i=0; i<10; i++){
+    outtl[0] += (double)bss[0][i] * 0.1;
+    outlp[0] += (double)loops[0][i] * 0.1;
   }
+  outtl[1] = calcStanDev(bss[0], 10, outtl[0]);
+  outlp[1] = calcStanDev(loops[0], 10, outlp[0]);
+  printf("bs:%f, bssd:%f, lp:%f, lpsd:%f\n",outtl[0], outtl[1], outlp[0], outlp[1]);
   
-  printf("bs:");
-  for(i=0;i<1;i++){
-    printf("%d ", op[0][i]);
-  }
-  printf("\nlps:");
-  for(i=0;i<1;i++){
-    printf("%d ", op[1][i]);
-  }
-  puts("");
-  printf("sd:");
-  for(i=0;i<1;i++){
-    printf("%Lf ", sd[0][i]);
-  }
-  printf("\nlps:");
-  for(i=0;i<1;i++){
-    printf("%Lf ", sd[1][i]);
-  }
-  puts("");
 
   return 0;
   

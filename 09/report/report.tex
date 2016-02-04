@@ -1,0 +1,809 @@
+\documentclass[a4j]{jsarticle}
+\title{進化的アルゴリズム最終レポート \ 課題9}
+\author{情報科学類, 3年, 2クラス, 学籍番号：201311403 \ 山岡 洸瑛, YamaokaKouei}
+\西暦
+\date{2016年2月12日}
+
+%余白設定
+\setlength{\topmargin}{20mm}
+\addtolength{\topmargin}{-1in}
+\setlength{\oddsidemargin}{20mm}
+\addtolength{\oddsidemargin}{-1in}
+\setlength{\evensidemargin}{15mm}
+\addtolength{\evensidemargin}{-1in}
+\setlength{\textwidth}{170mm}
+\setlength{\textheight}{235mm}
+\setlength{\headsep}{0mm}
+\setlength{\headheight}{0mm}
+\setlength{\topskip}{0mm}
+
+
+\def\pgfsysdriver{pgfsys-dvipdfmx.def}
+
+\usepackage{ascmac}
+\usepackage{here}
+\usepackage{tikz}
+\usetikzlibrary{trees}
+\usepackage{bm}
+\usepackage{here}
+
+\usepackage{listings,jlisting}
+\renewcommand{\lstlistingname}{リスト}
+\lstset{
+basicstyle=\ttfamily\scriptsize,
+commentstyle=\textit,
+classoffset=1,
+keywordstyle=\bfseries,
+frame=tRBl,
+framesep=5pt,
+showstringspaces=false,
+numbers=left,
+stepnumber=1,
+numberstyle=\tiny,
+tabsize=2
+}
+
+\begin{document}
+\begin{titlepage}
+\maketitle 
+\thispagestyle{empty}
+\end{titlepage}
+\setcounter{tocdepth}{3}
+\tableofcontents
+\newpage
+\section{実験の目的}
+ハイブリッドACOのプログラムを作成し，以前作成したAS,MMASと比較するため実験を行った．今回作成したハイブリッドACOは，MMASと2optを用いている．そのため，最良解の順回路長，反復回数共にAS,MMASよりも良い結果が得られると予想される．
+\section{実験方法}
+AS,MMAS,ハイブリッドACOそれぞれを用いて巡回セールスマン問題のベンチマーク問題5つを解き，最良解の順回路長および反復回数を比較する．ACOのパラメータとして，AS,MMASは以前最適化したものを使用し，ハイブリッドACOは与えられた値の範囲で最適化したものを使用した．これらのパラメータを表\ref{para}にまとめた．また，乱数の初期値として10個のシード値｛509, 521, 523, 541, 547, 557, 563, 569,571, 577｝を用いた．10回試行をする場合はそれぞれ1回ずつ，1度のみ試行する場合は509を使用した．それ以外を使用した場合は，その都度明記する．
+
+\begin{table}[H]
+ \begin{center}
+  \caption{各ACOのパラメータ}
+  \label{para}
+  \begin{tabular}[tb]{|c|c|c|c|c|c|} \hline
+   & $\alpha$ & $\beta$ & アリの数m & $\rho$ & $p_{best}$ \\\hline
+   AS & 1 & 3 & 都市の数n & 0.5 & - \\\hline
+   MMAS & 1 & 2 & 都市の数n & 0.02 & 0.05 \\\hline
+   ハイブリッドACO & 1 & 2 & 25 & 0.5 & 0.01 \\\hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+\subsection{終了条件について}
+最良解の順回路長が最適解の順回路長と一致した時点で計算を終了すると，無駄な計算を省くことができる．しかし，最適解と一致した場合と一致しなかった場合で反復回数に大きな差が開いてしまい，標準偏差が非常に大きくなってしまう．そのため，最適解と一致した場合でも通常の終了条件まで計算をしている．
+
+\subsection{ハイブリッドACOのパラメータ最適化}
+ハイブリッドACOのパラメータである$\rho$と$p_{best}$の最適値を以下に従って求めた結果，表\ref{para}に示したとおり，$\rho = 0.5$, $p_{best} = 0.01$となった．
+\begin{enumerate}
+ \item 与えられた$\rho$, $p_{best}$の値それぞれ6つずつ，計36組を用いて，最良解の順回路長と終了時の反復回数を求める．
+ \item 各組10回ずつ試行を行い，順回路長と反復回数の平均と標準偏差を求める． 
+ \item 最良の順回路長となった組を最適なパラメータとする．ただし，反復回数や標準偏差が非常に大きい場合は次点の組を考慮する．
+\end{enumerate}
+
+各組10回ずつ試行を行った結果を散布図として図\ref{avesan},\ref{sdsan}にまとめた．図\ref{avesan}は平均を，図\ref{sdsan}は標準偏差を示している．横軸は最良解の順回路長の平均と標準偏差，縦軸は反復回数の平均と標準偏差を示している．図\ref{avesan}より，左下の$\rho = 0.5$, $p_{best} = 0.01$が最適なパラメータであることがわかる．また，図\ref{sdsan}より標準偏差も十分小さいため，これらを最適なパラメータとした．なお，パラメータ最適化のより詳細なグラフは4\ 考察の項で示す．
+
+\begin{figure}[H]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=11.5cm, clip, bb=0 0 562 371]{pic/avesan.jpg}
+  \end{center}
+  \caption{順回路長と反復回数の平均の散布図}
+  \label{avesan}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=11.5cm, clip, bb=0 0 563 374]{pic/sdsan.jpg}
+  \end{center}
+  \caption{順回路長と反復回数の標準偏差の散布図}
+  \label{sdsan}
+ \end{minipage}
+\end{figure}
+
+
+\section{実験結果}
+表\ref{para}に示したハイブリッドACOのパラメータを用いて，ベンチマーク問題5題を解いた結果を表\ref{result}に示す．表\ref{result}には各問題毎に，最良解の順回路長の平均，標準偏差及び平均を標準偏差で割った変動係数と，反復回数の平均，標準偏差を示している．なお，最良解の順回路長の平均の括弧内には，最適解の順回路長を示している．
+
+\begin{table}[H]
+\begin{center}
+ \caption{実験結果}
+ \label{result}
+ \begin{tabular}[tb]{|c||c|c|c||c|c|}\hline
+  ベンチマーク& \multicolumn{3}{|c||}{最良解の巡回路長} & \multicolumn{2}{|c|}{反復回数}  \\ \cline{2-6}
+  問題& 平均 & 標準偏差 & 変動係数 & 平均 & 標準偏差 \\\hline 
+  eil51 & 426.3（426） & 0.458258 & 0.001074966 & 220.5 & 12.282101 \\\hline
+  pr76 & 108159（108159） & 0 & 0 & 240.8 & 46.194805 \\\hline
+  rat99 & 1211.1（1211） & 0.3 & 0.000247709 & 309.7 & 100.389292 \\\hline
+  kroA100 & 21282（21282） & 0 & 0 & 221.8 & 9.526804 \\\hline
+  ch130 & 6149.1（6110） & 19.185672 & 0.003120078 & 296.4 & 86.158227 \\\hline
+ \end{tabular}
+\end{center} 
+\end{table}
+
+\subsection{最良解の順回路長の推移}
+各ベンチマーク問題に対する最良解の順回路長の推移のグラフを図\ref{eil}から図\ref{ch}に示す．これらの図は実験として10回行った試行の内，最も最良解の順回路長が短かったものを示している．最良解の順回路長が同じだった場合は，反復回数が少ないものを示している．また，終了条件に至った時点までのグラフとし，順回路長が更新されずに200回繰り返した部分はグラフに示していない．
+
+\subsubsection{eil51}
+eil51に対する最良解の順回路長の推移のグラフを図\ref{eil}に示す．
+シード値は563を用いた．最適解の順回路長426に対して，最良解の順回路長は426となり一致した．反復回数は209回であった．
+
+\subsubsection{pr76}
+pr76に対する最良解の順回路長の推移のグラフを図\ref{pr}に示す．
+シード値は557を用いた．最適解の順回路長108159に対して，最良解の順回路長は108159となり一致した．反復回数は208回であった．
+
+\begin{figure}[H]
+ \begin{center}
+ \end{center}
+\end{figure}
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=10cm, clip, bb=0 0 366 250]{pic/e.jpg}
+  \end{center}
+  \caption{eil51の順回路長の推移}
+  \label{eil}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=10.3cm, clip, bb=0 0 373 253]{pic/p.jpg}
+  \end{center}
+  \caption{pr76の順回路長の推移}
+  \label{pr}
+ \end{minipage}
+\end{figure}
+
+
+
+\subsubsection{rat99}
+rat99に対する最良解の順回路長の推移のグラフを図\ref{rat}に示す．
+シード値は569を用いた．最適解の順回路長1211に対して，最良解の順回路長は1211となり一致した．反復回数は215回であった．
+\subsubsection{kroA100}
+kroA100に対する最良解の順回路長の推移のグラフを図\ref{kro}に示す．
+シード値は509を用いた．最適解の順回路長21282に対して，最良解の順回路長は21282となり一致した．反復回数は210回であった．
+\subsubsection{ch130}
+ch130に対する最良解の順回路長の推移のグラフを図\ref{ch}に示す．
+シード値は557を用いた．最適解の順回路長6110に対して，最良解の順回路長は6128となり，5題の中で唯一最適解と一致しなかった．反復回数は232回であった．
+
+\begin{figure}[htbp]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=10cm, clip, bb=-25 0 369 252]{pic/r.jpg}
+  \end{center}
+  \caption{rat99の順回路長の推移}
+  \label{rat}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+  \includegraphics[width=10cm, clip, bb=-25 0 373 257]{pic/k.jpg}
+  \end{center}
+  \caption{kroA100の順回路長の推移}
+  \label{kro}
+ \end{minipage}
+\end{figure}
+\begin{figure}[htb]
+ \begin{center}
+  \includegraphics[width=12cm, clip, bb=-75 0 372 256]{pic/c.jpg}
+ \end{center}
+  \caption{ch130の順回路長の推移}
+  \label{ch}
+\end{figure}
+
+
+
+
+\section{考察}
+\subsection{ハイブリッドACOのパラメータ最適化についての考察}
+2.2 ハイブリッドACOのパラメータ最適化で得られた結果について考察する．最適化の過程で得られたグラフを図\ref{tlpb}から図\ref{sdlprho}に示す．これらのグラフより，最適なパラメータとした$\rho = 0.5$, $p_{best} = 0.01$が，確かに最適であることが確認できる．また，以下の性質1から性質4が読み取れる．
+\begin{enumerate}
+ \item 蒸発率$\rho$（$0<\rho\leq1$）が小さいと性能が大きく落ちる．
+ \item $\rho$が大きすぎても若干性能が落ちる．
+ \item $\tau_{min}$を計算するときに使用するパラメータ$p_{best}$は，性能に大きな影響を及ぼさない．
+ \item 上記の例外で，$\rho$が大きい場合に$p_{best}$も大きいと，性能が大きく落ちる．
+\end{enumerate}
+これらについて，それぞれの図を用いて説明する．なおこれらの図において，オレンジ色の実線で示されているグラフが，最適なパラメータとして採用した$\rho$, $p_{best}$の値である．
+
+\subsubsection{最良解の順回路長の平均についての考察}
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8.7cm, clip, bb=-75 0 562 303]{pic/tlpb.jpg}
+  \end{center}
+  \caption{$p_{best}$毎に$\rho$を変化させた時の順回路長の平均の変化}
+  \label{tlpb}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8.7cm, clip, bb=-75 0 564 310]{pic/tlrho.jpg}
+  \end{center}
+  \caption{$\rho$毎に$p_{best}$を変化させた時の順回路長の平均の変化}
+  \label{tlrho}
+ \end{minipage}
+\end{figure}
+
+図\ref{tlpb}は横軸が$\rho$の値，縦軸が順回路長の平均になっており，$p_{best}$毎に$\rho$を変化させた時の順回路長の平均の変化を表している．図\ref{tlrho}は横軸に$p_{best}$をとり，縦軸は同様である．こちらは$\rho$毎に順回路長の平均の変化をまとめたものである．どちらも使用しているデータは共通である．図\ref{tlpb}において，$p_{best} = 0.01$は全体的に順回路長の平均が小さくなっており，良いパラメータであると言える．また，図\ref{tlrho}より，$\rho = 0.5$も同様に良いパラメータであると言える．
+\par
+パラメータの性質については，まず図\ref{tlpb}より，$p_{best}$の影響が小さいことがわかる．これは性質3にあたる．
+また，$\rho$の値によって順回路長の平均が大きく異なることもわかる．加えて，$\rho$が大きくなるに従って順回路長の平均は小さくなる傾向があり，$\rho=0.5$で最小となっている．これらは性質1,2にあたる．
+\par
+性質1理由として，フェロモンが過剰に分散していることが考えられる．$\rho$が小さいと，蒸発するフェロモンが少なくなり，相対的に更新されるフェロモンの影響が小さくなってしまう．つまり，全ての都市間にフェロモンが多く残り，アリの通るルートの収束が遅くなってしまう．結果として2optを効果的に使うことができず，局所最適解に至ることが多いのだと考えられる．
+\par
+しかし，$\rho$が大きすぎると，逆にフェロモンが過剰に集中してしまう．つまり，蒸発するフェロモンが多いため，更新されるフェロモンの影響が大きくなってしまうのである．その結果，初期に収束したフェロモンによる選択確率が非常に大きくなり，局所最適解からの脱出が難しくなるのだと考えられる．これが性質2の理由と言える．
+
+\subsubsection{最良解の順回路長の標準偏差についての考察}
+
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8.7cm, clip, bb=-75 0 565 300]{pic/sdtlpb.jpg}
+  \end{center}
+  \caption{$p_{best}$毎に$\rho$を変化させた時の順回路長の標準偏差の変化}
+  \label{sdtlpb}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8.7cm, clip, bb=-75 0 564 302]{pic/sdtlrho.jpg}
+  \end{center}
+  \caption{$\rho$毎に$p_{best}$を変化させた時の順回路長の標準偏差の変化}
+  \label{sdtlrho}
+ \end{minipage}
+\end{figure}
+
+図\ref{sdtlpb}は横軸が$\rho$の値，縦軸が順回路長の標準偏差になっており，$p_{best}$毎に$\rho$を変化させた時の順回路長の標準偏差の変化を表している．図\ref{sdtlrho}は横軸に$p_{best}$をとり，縦軸は同様である．こちらは$\rho$毎に順回路長の標準偏差の変化をまとめたものである．どちらも使用しているデータは共通である．
+\par
+図\ref{sdtlpb}より標準偏差も平均と同様に，$p_{best}$による影響は小さいといえる．そのため$p_{best} = 0.01$を最適としても問題ないと言える．$\rho = 0.2$の時，標準偏差が小さくなっており，特に$p_{best} = 0.005$の時は0になっている．しかし，この時の順回路長は427であり，最適解の426に至っていない．またその他の$p_{best}$についても順回路長の平均に重点を置くと，最適なパラメータではないと言える．
+\par
+図\ref{sdtlrho}より，$\rho = 0.2$の時が常に最良の標準偏差となっているが，最適でないことはすでに述べた．また，次点で$\rho = 0.1$の時，標準偏差が小さくなっている．しかし，図\ref{tlrho}の順回路長の平均をみると，$\rho = 0.5$に対して平均的に0.3程度大きな値になっている．$\rho = 0.1$と$\rho = 0.5$における標準偏差の差は0.1に満たないため，$\rho = 0.5$として問題ないと言える．
+
+\subsubsection{反復回数の平均についての考察}
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8.7cm, clip, bb=-75 0 565 304]{pic/lppb.jpg}
+  \end{center}
+  \caption{$p_{best}$毎に$\rho$を変化させた時の反復回数の平均の変化}
+  \label{lppb}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8.7cm, clip, bb=-75 0 564 305]{pic/lprho.jpg}
+  \end{center}
+  \caption{$\rho$毎に$p_{best}$を変化させた時の反復回数の平均の変化}
+  \label{lprho}
+ \end{minipage}
+\end{figure}
+
+図\ref{lppb}より，$\rho$が小さいと$p_{best}$によらず反復回数が多くなるため，小さすぎる$\rho$は良くないといえる．これは性質1である．$\rho$を大きくしていくと，$0.1$以降は反復回数が下がっていく．しかし，$\rho$が$0.8$になると，グラフが2つ跳ね上がっている．これは$p_{best} = 0.1, 0.5$のときである．これより，$\rho$, $p_{best}$共に大きい時は反復回数が大きくなってしまうことがわかる．これが性質4である．$p_{best} = 0.01$のグラフは，平均的に良い値をとっており，最適なパラメータとすることができる．
+\par
+図\ref{lprho}より，$\rho = 0.8$が最小の反復回数となっているが，$p_{best}$が$0.05$を超えると急激に増えてしまう．$\rho = 0.5$は$0.8$との差も小さく，値も小さい．そのため全体的には良い値であると言える．しかし$p_{best} = 0.5$では上昇しているため，大きすぎる$p_{best}$は採用できない．
+\par
+ここで性質4の理由について考察する．$p_{best}$は$\tau_{min}$を求めるときに使うパラメータで，与えられた式は以下である．
+$$
+\tau_{min} = \frac{1 - \sqrt[n]{p_{best}}}{(\frac{n}{2}-1)\times\sqrt[n]{p_{best}}}\times\tau_{max}
+$$
+ここで
+$$
+\frac{\tau_{max}}{\frac{n}{2}-1}
+$$
+を定数とすれば，$C$を定数として，$\tau_{min}$は以下の式に従って変動する．
+$$
+\tau_{min} = \frac{1 - \sqrt[n]{p_{best}}}{\sqrt[n]{p_{best}}}\times C
+$$
+これより，$\tau_{min}$は$p_{best}$が大きくなるに連れて小さくなる．MMASはフェロモン量に上限と下限を設けることにより，多様性を維持し，フェロモンを分散化している．しかし，$p_{best}$が大きすぎると$\tau_{min}$が小さくなり，下限が0に近づいてしまう．これでは下限が無い場合と変わらなくなってしまう．従って，$p_{best}$が1に近づくと，それだけフェロモンの分散化が阻害されると言える．
+\par
+また，4.1.1で$\rho$が大きくなると，フェロモンが過剰に集中してしまうと述べた．つまり$p_{best}$, $\rho$共に大きい場合，フェロモンの分散化が阻害され，かつ過剰に集中してしまう．これらが合わさり，性能の低下を招いていると考えられる．これが性質4の理由である．
+\par
+性質3の理由としては，$p_{best}$が小さい場合，フェロモンの分散化を十分に行うことができるため，性能に大きな影響を及ぼさないのだと考えられる．
+
+\subsubsection{反復回数の標準偏差についての考察}
+\begin{figure}[htb]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8.7cm, clip, bb=-75 0 563 305]{pic/sdlppb.jpg}
+  \end{center}
+  \caption{$p_{best}$毎に$\rho$を変化させた時の反復回数の標準偏差の変化}
+  \label{sdlppb}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=8.7cm, clip, bb=-75 0 565 302]{pic/sdlprho.jpg}
+  \end{center}
+  \caption{$\rho$毎に$p_{best}$を変化させた時の反復回数の標準偏差の変化}
+  \label{sdlprho}
+ \end{minipage}
+\end{figure}
+
+図\ref{sdlppb}の傾向は平均の時と同じである．$p_{best}$が大きい場合，$\rho$が大きくなると，標準偏差も大きくなる．また，$p_{best} = 0.01$の時の標準偏差は全体的に非常に良い値をとっており，最適なパラメータであることが確認できる．
+\par
+図\ref{sdlprho}の傾向も平均の時と同じである．$\rho$が大きい場合，$p_{best}$が大きくなると，標準偏差も大きくなる．$\rho=0.5$の標準偏差は十分に小さいため，これを最適なパラメータとしても問題ないと言える．
+
+
+\subsection{実験結果の考察}
+実験結果について考察する．実験結果をまとめた表は\ref{result}に示してある．まずベンチマーク問題eil51については，パラメータの調整に使用したこともあり，非常に良い結果が得られた．さらにpr76, kroA100においては，10回の試行全てにおいて最適解に至った．反復回数も少なく，ハイブリッドACOの威力が現れている．なお，pr76の反復回数の標準偏差が大きくなっているのは，シード値577の時に反復回数が355と大きくなっているためであり，それを除けば20程度になっている．また，rat99は反復回数の平均，標準偏差共に大きくなっているものの，順回路長はeil51よりも良くなっている．
+\par
+しかし，ch130においては，一度も最適解に至ることができなかった．反復回数も多くなっている．これより，ハイブリッドACOであっても，全ての巡回セールスマン問題に適している，とは言えないということがわかる．それでも10回の試行における最良の順回路長は6128であり，最適解に近い値を得ることができている．これより，ハイブリッドACOは，巡回セールスマン問題に対して，十分実用的な性能を持っていると言える．
+\par
+順回路長の変動係数を見ると，rat99に対してeil51は5倍と大きくなっている．ch130はeil51に対して3倍程度となっており，最適解に至れていないにも関わらず，標準偏差はそれほど大きくないということがわかる．つまりch130はその他の問題に対して，局所最適解に陥りやすいのではないだろうか．eil51よりもkroA100の方が良い結果であることから，都市の多さによって局所最適解に陥りやすくなることは無いと言える．従って，局所最適解に陥りやすい都市の配置があるのではないだろうか．この問題については解決しなかった．
+
+
+\subsection{AS,MMAS,ハイブリッドACOの比較}
+AS,MMAS,ハイブリッドACOの実験結果を比較する．各ACOを用いて，各ベンチマーク問題を10回ずつ解いた時の，最良解の順回路長と反復回数の平均を表\ref{acoave}に示し，標準偏差を表\ref{acosd}に示す．また10回の試行のうち，最も良い順回路長を表\ref{best}に示す．なお，AS,MMASについては，表\ref{acoave}において小数点以下を切り捨てており，表\ref{acosd}においては小数点以下第3位を四捨五入している．
+\begin{table}[htb]
+ \begin{center}
+  \caption{各ACOにおける最良解の順回路長と反復回数の平均}
+  \label{acoave}
+  \begin{tabular}[tb]{|c||c|c|c||c|c|c|} \hline
+ ベンチマーク& \multicolumn{3}{|c||}{最良解の巡回路長の平均}& \multicolumn{3}{|c|}{反復回数の平均} \\\cline{2-7}
+ 問題 & AS & MMAS & ハイブリッドACO & AS & MMAS & ハイブリッドACO \\\hline
+eil51 & 439 & 427 & 426.3 & 1900 & 1700 & 220.5 \\\hline
+pr76 & 114921 & 109368 & 108159 & 1757 & 2091 & 240.8 \\\hline
+rat99 & 1266 & 1212 & 1211.1 & 1844 & 1757 & 309.7 \\\hline
+kroA100 & 22495 & 21361 & 21282 & 1988 & 1935 & 221.8 \\\hline
+ch130 & 6473 & 6174 & 6149.1 & 1942 & 2391 & 296.4 \\\hline
+  \end{tabular}
+ \end{center}
+\end{table}
+\par
+表\ref{acoave}より，最良解の順回路長の平均はAS, MMAS, ハイブリッドACOの順に良くなっている．ACOの基本であるASに工夫を加えるごとに改良されており，予想通りであると言える．反復回数については，AS,MMAS共に似た値をとっており，ハイブリッドACOのみ小さくなっている．whileループの終了条件がAS,MMASにおいては，最良解の順回路長が1000回連続で更新されない，に対してハイブリッドACOは200回連続で更新されない，となっている．そのためAS,MMASの方が多くなってしまう．しかし，それを差し引いてもAS,MMASの反復回数は多く，ハイブリッドACOにおける2optの効果が現れている．
+
+\begin{table}[htb]
+ \begin{center}
+  \caption{各ACOにおける最良解の順回路長と反復回数の標準偏差}
+  \label{acosd}
+  \begin{tabular}[tb]{|c||c|c|c||c|c|c|} \hline
+ ベンチマーク& \multicolumn{3}{|c||}{最良解の巡回路長の標準偏差}& \multicolumn{3}{|c|}{反復回数の標準偏差} \\\cline{2-7}
+問題 & AS & MMAS & ハイブリッドACO & AS & MMAS & ハイブリッドACO \\\hline
+eil51 & 3.49 & 1.41 & 0.458258 & 337.94 & 284.9 & 12.28101 \\\hline
+pr76 & 1061.45 & 913.14 & 0 & 611.57 & 281.07 & 46.194805 \\\hline
+rat99 & 7.28 & 1.76 & 0.3 & 641.99 & 189.1 & 100.389292 \\\hline
+kroA100 & 58.16 & 37.49 & 0 & 647.78 & 110.08 & 9.526804 \\\hline
+ch130 & 53.55 & 32.55 & 19.185672 & 585.08 & 402.36 & 86.158227 \\\hline
+  \end{tabular}
+ \end{center}
+\end{table}
+\par
+表\ref{acosd}より，最良解の順回路長の標準偏差も平均と同様にAS, MMAS, ハイブリッドACOの順に良くなっている．反復回数についても同様であり，ハイブリッドACOは他の2つに比べて安定的であると言える．
+
+\begin{table}[htb]
+ \begin{center}
+  \caption{各ACOにおける最良の順回路長}
+  \label{best}
+  \begin{tabular}[tb]{|c||c|c|c|} \hline
+ ベンチマーク& \multicolumn{3}{|c|}{最良の巡回路長} \\\cline{2-4}
+問題 & AS & MMAS & ハイブリッドACO \\\hline
+eil51 & 435 & 426 & 426 \\\hline
+pr76 & 112608 & 111464 & 108159 \\\hline
+rat99 & 1251 & 1213 & 1211 \\\hline
+kroA100 & 22411 & 21330 & 21282 \\\hline
+ch130 & 6372 & 6207 & 6128 \\\hline
+  \end{tabular}
+ \end{center}
+\end{table}
+
+\par
+表\ref{best}より，10回の試行における最良の順回路長もAS, MMAS, ハイブリッドACOの順に良くなっている．ASは最適解に至ることができていないが，MMASになると，eil51においては最適解にたどり着くことができている．従って，MMASを使えば，問題によっては最適解を得ることができるということがわかる．加えて2optなどの局所探索によるハイブリッドACOを使えば，多くの問題で安定的に最適解を得ることも可能となる．
+\par
+ハイブリッドACOでeli51を適していないパラメータで解いた場合，最悪の順回路長は429となっている．この数値はASの最良値よりも良いが，MMASよりは悪くなっている．これより，適したパラメータを用いない限り，ハイブリッドによる利点を生かせないということがわかる．逆説的には，適したパラメータを設定することで，ハイブリッドの利点を最大限活かすことができれば，性能は格段に向上すると言える．
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{プログラムのリスト}
+リスト\ref{MMAS2opt}に今回作成したプログラムを示す．本プログラムと同一ディレクトリに各ベンチマーク問題のtspファイルがあることを想定している．
+
+\begin{lstlisting}[caption=MMAS2opt.c, label=MMAS2opt, xleftmargin=1cm]
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<math.h>
+#include<limits.h>
+
+#define MAX_CITY 500
+
+int NNmethod(int *c, int *euc, int num);
+int calcEuc(double x1, double x2, double y1, double y2);
+double calcTauMin(double taumax, int n, double p);
+void swap(int *x, int *y);
+void reverse(int *array, int start, int end);
+
+int main(int argc, char *argv[]){
+
+  const int maxloop = 200;
+  const double rhos[6] = {0.01, 0.02, 0.1, 0.2, 0.5, 0.8};
+  const double pbests[6] = {0.001, 0.005, 0.01, 0.05, 0.1, 0.5};
+  const int seeds[10] = {509, 521, 523, 541, 547, 557, 563, 569, 571, 577};
+  int sdc = 0;
+  srand(seeds[sdc]);
+  
+  // variable declaration
+  int cityNum; // number of citis
+  double x, y; // for tsp file
+  int i, j, ant, city; // for for loop
+  int min, minNum;
+  double sum; // for output
+  int count, change, loopcount, tmp;
+  
+  // variable declaration for Ant System
+  int alpha = 1;
+  int beta = 2;
+  int m = 25; // m = cityNum
+  int rho = 4;
+  int pbest = 2;
+
+  // usage
+  if(argc == 1 || strcmp(argv[1], "-help") == 0){
+    printf("usage: $ ./NN2opt tspFileNumber\n");
+    printf("tspFileNumber = 0:eil51, 1:pr76, 2:rat99, 3:kroA100, 4:ch130\n");
+    return 0;
+  }
+
+  //// input tsp file
+  char tspName[5][12] = {"eil51.tsp", "pr76.tsp", "rat99.tsp", "kroA100.tsp", "ch130.tsp"};
+  FILE *fp;
+  char *fname = tspName[atoi(argv[1])];
+  char s[100];
+  double buffx[MAX_CITY], buffy[MAX_CITY];
+
+  fp = fopen(fname, "r");
+  if(fp == NULL){
+    printf("File %s is not found.\nusage: $ ./NN2opt -help\n", fname);
+    return -1;
+  }
+
+  // skip 6 line
+  for(i=0; i<6; i++){
+    fgets(s, 100, fp);
+  }
+
+  // read
+  i = 0;
+  int ret;
+  while((ret = fscanf(fp, "%d%lf%lf", &cityNum, &x, &y)) != EOF){
+    if(ret == 0)
+      break;
+    buffx[i] = x;
+    buffy[i] = y;
+    i++;
+  }
+  fclose(fp);  
+
+  // input city locaions
+  double X[cityNum], Y[cityNum]; // city locations
+  for(i=0; i<cityNum; i++){
+    X[i] = buffx[i];
+    Y[i] = buffy[i];
+  }
+  //// end input tsp file
+  
+  // variable declaration
+  int eucArray[cityNum][cityNum];
+  int check[m][cityNum]; // for check to passed city
+  int bsf[cityNum]; // best-so-far
+  int solutions[m][cityNum];
+  double tau[cityNum][cityNum]; // pheromone
+  double taumax, taumin;
+  double p[cityNum][cityNum]; // selection probability
+  int tourLength[m];
+  int tourLengthTransition[maxloop * 10];
+  int c1, c2; // selected city
+  int c3, c4, l1, l2, l3, l4; // for 2opt
+  int bs, ibs; // tour length @best solution, @iteration
+  double ftmp; // double tmp
+
+  // init
+  for(i=0; i<cityNum; i++){
+    for(j=0; j<cityNum; j++){
+      tau[i][j] = 0;
+      p[i][j] = 0;
+    }
+    bsf[i] = 0;
+  }
+  for(i=0; i<m; i++){
+    for(j=0; j<cityNum; j++){
+      solutions[i][j] = 0;
+      check[i][j] = 0;
+    }
+    tourLength[i] = 0;
+  }
+  for(i=0; i<maxloop*10; i++){
+    tourLengthTransition[i] = 0;
+  }
+
+  // calc EUC_2D
+  // init diagonal 
+  for(i=0; i<cityNum; i++){
+    eucArray[i][i] = 0;
+  }
+  // calc 
+  for(i=0; i<cityNum; i++){
+    for(j=i+1; j<cityNum; j++){
+      tmp = calcEuc(X[i], X[j], Y[i], Y[j]);
+      eucArray[i][j] = tmp;
+      eucArray[j][i] = tmp;
+    }
+  }
+
+  // init pheromone
+  // make solution by NN
+  solutions[0][0] = 0; // start city 0
+  check[0][0] = 1;
+  min = 0;
+  for(i=1; i<cityNum; i++){
+    min = NNmethod(check[0], eucArray[min], cityNum); // find min EUC_2D
+    check[0][min] = 1; // check city
+    bsf[i] = min;
+  }
+  
+  // clac tour length 
+  sum = 0;
+  for(i=0; i<cityNum; i++){ // calc link(c1, c2) length
+    c1 = bsf[i]; 
+    c2 = bsf[(i+1)%cityNum];
+    bs += eucArray[c1][c2];
+  }
+
+  // set initial pheromone
+  taumax = 1.0 / (bs * rhos[rho]);
+  taumin = calcTauMin(taumax, cityNum, pbests[pbest]);
+  for(i=0; i<cityNum; i++){
+    for(j=i+1; j<cityNum; j++){
+      tau[i][j] = taumax;
+      tau[j][i] = taumax;
+    }
+  }
+  // end init pheromone
+  
+  // start iteration
+  count = 0;
+  loopcount = 0;
+  while(1){
+    tourLengthTransition[loopcount] = bs;
+    loopcount++;
+    // init
+    for(i=0; i<m; i++){ 
+      for(j=0; j<cityNum; j++){
+        check[i][j] = 0;
+      }
+      tourLength[i] = 0;
+    }
+
+    // loop for ant
+    for(ant=0; ant<m; ant++){
+      c1 = cityNum * (rand()/(RAND_MAX+1.0)); // select first city
+      check[ant][c1] = 1;
+      solutions[ant][0] = c1;
+      
+      // loop for make tour
+      for(city=1; city<cityNum; city++){
+        // init
+        sum = 0;
+        for(i=0; i<cityNum; i++){
+          for(j=0; j<cityNum; j++){
+            p[i][j] = 0;
+          }
+        }
+
+        // calc selection probability ( p[][] )
+        for(i=0; i<cityNum; i++){ // calc denominator
+          if(check[ant][i] == 0){
+            sum += pow(tau[c1][i], alpha) * pow((1.0 / eucArray[c1][i]), beta);
+          }
+        }
+        for(i=0; i<cityNum; i++){
+          if(check[ant][i] == 0 && tau[c1][i] != 0.0){
+            ftmp = pow(tau[c1][i], alpha) * pow((1.0 / eucArray[c1][i]), beta) / sum;
+            if(isnan(ftmp)){
+              ftmp = 1.0 / (bs*rho);
+            }
+            p[c1][i] = ftmp;
+            p[i][c1] = ftmp;
+          }
+        }
+        // make selection probability array
+        for(i=1; i<cityNum; i++){
+          p[c1][i] += p[c1][i-1];
+        }
+
+        // select next city
+        ftmp = p[c1][cityNum-1] * (rand()/(RAND_MAX+1.0));
+        i = 0;
+        while(1){
+          if(p[c1][i] >= ftmp){
+            c2 = i; // now c2 = the city next to c1
+            check[ant][c2] = 1; // check
+            solutions[ant][city] = c2; // input solution
+            c1 = c2;
+            break;
+          }
+          i++;
+        }
+      }
+      // end loop for make tour
+      
+      // start 2opt
+      while(1){
+        change = 0;
+        for(i=0; i<cityNum-2; i++){ // link 1 = (c1, c2)
+          c1 = solutions[ant][i];
+          c2 = solutions[ant][i+1];
+          for(j=i+2; j<cityNum; j++){ // link 2 = (c3, c4)
+            c3 = solutions[ant][j];
+            c4 = solutions[ant][(j+1)%cityNum]; 
+                           // if j = (cityNum - 1) then j+1 means 0 (= cityNum % cityNum)
+            
+            l1 = calcEuc(X[c1], X[c2], Y[c1], Y[c2]); // length c1, c2
+            l2 = calcEuc(X[c3], X[c4], Y[c3], Y[c4]); // length c3, c4
+            l3 = calcEuc(X[c1], X[c3], Y[c1], Y[c3]); // length c1, c3
+            l4 = calcEuc(X[c2], X[c4], Y[c2], Y[c4]); // length c2, c4
+            
+            if(l1 + l2 > l3 + l4){ // if before length > after length then swap
+              reverse(solutions[ant], i+1,  j);
+              swap(&c2, &c3);
+              change++;
+            }
+          }
+        }
+        if(change == 0) // if did not swap
+          break;
+      }
+      // end 2opt
+      
+      // calc tour length
+      sum = 0;
+      for(i=0; i<cityNum; i++){ // calc link(c1, c2) length
+        c1 = solutions[ant][i]; 
+        c2 = solutions[ant][(i+1)%cityNum];
+        sum += eucArray[c1][c2];
+      }
+      tourLength[ant] = sum;
+      // goto next ant
+    }
+    // end loop for ant
+    
+    // search iteration beat
+    ibs = INT_MAX;
+    for(i=0; i<m; i++){
+      if(ibs > tourLength[i]){
+        ibs = tourLength[i];
+        minNum = i;
+      }
+    }
+    
+    // end decision
+    if(bs <= ibs){ // continue 
+      count++;
+    }
+    else{ // reset count and update best solution, taumax, and taumin, 
+      bs = ibs;
+      count = 0;
+      for(i=0; i<cityNum; i++){ 
+        bsf[i] = solutions[minNum][i]; // update best-so-far
+      }
+    }
+    if(count == maxloop){// end
+      break;
+    }
+    
+    // update pheromone
+    taumax = 1.0 / (rhos[rho] * ibs);
+    taumin = calcTauMin(taumax, cityNum, pbests[pbest]);
+    // evaporation
+    for(i=0; i<cityNum; i++){
+      for(j=0; j<cityNum; j++){
+        tau[i][j] *= (1.0 - rhos[rho]);
+      }
+    }
+    // add pheromone
+    ftmp = 1.0 / ibs;
+    for(i=0; i<cityNum; i++){
+      c1 = solutions[minNum][i];
+      c2 = solutions[minNum][(i+1)%cityNum];
+      tau[c1][c2] += ftmp;
+      tau[c2][c1] += ftmp;
+    }
+    // MAX-MIN
+    for(i=0; i<cityNum; i++){
+      for(j=i+1; j<cityNum; j++){
+        if(tau[i][j] > taumax){
+          tau[i][j] = taumax;
+          tau[j][i] = taumax;
+        }
+        if(tau[i][j] < taumin){
+          tau[i][j] = taumin;
+          tau[j][i] = taumin;
+        }
+      }
+    }
+    // end update pheromone
+  }
+  tourLengthTransition[loopcount] = bs;
+  // end MMAS + 2opt
+  
+  // output and end
+  printf("seed: %d, bs: %d, %dloops\nsolution: ", seeds[sdc], bs, loopcount);
+  for(i=0; i<cityNum; i++){
+    printf("%d", bsf[i]);
+    if(i == cityNum-1)
+      break;
+    printf(", ");
+  }
+  puts("");
+
+  return 0;
+}
+
+/* 
+ *c: checkArray
+ *euc: eucArray[i]
+ num: cityNum
+ return: index of min EUC_2D
+ */
+int NNmethod(int *c, int *euc, int num){
+  int i, minNum;
+  int m = INT_MAX;
+  for(i=0; i<num; i++){
+    if(*c == 0 && *euc != 0 && m > *euc){ // if (not checked and not 0 and min)
+      m = *euc;
+      minNum = i;
+    }
+    if(i<num-1){
+      ++c;
+      ++euc;
+    }
+  }
+  return minNum;
+}
+
+/* 
+  Calculate the Euclidean distance
+  x1, x2, y1, y2: Coordinate. A(x1, y1), B(x2, y2)
+  return: EUC_2D
+*/
+int calcEuc(double x1, double x2, double y1, double y2){
+  return (int)(sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2)) + 0.5);
+   
+}
+
+/*
+  Calculate taumin
+  n: cityNum
+  p: pbest
+  return: taumin
+ */
+double calcTauMin(double taumax, int n, double p){
+  double tmp = pow(p, (1.0 / n));
+  return ((1.0 - tmp) * taumax) / ((n/2.0 - 1.0) * tmp);
+}
+
+/* swap x, y */
+void swap(int *x, int *y){
+  int tmp = *x;
+  *x = *y;
+  *y = tmp;
+}
+
+/* reverse *array from start to end */
+void reverse(int *array, int start, int end){
+  int i;
+  for(i=0; i<(end-start+1)/2; i++){
+    swap(&array[start + i], &array[end - i]);      
+  }
+}
+\end{lstlisting}
+
+
+\end{document}
